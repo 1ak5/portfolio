@@ -1571,7 +1571,7 @@ html {
     <div class="nav-links">
       <a href="#home">Home</a>
       <a href="#about">About</a>
-      <a href="#portfolio">Projects</a>
+      <a href="#work">Projects</a>
       <a href="#contact">Contact</a>
     </div>
   </nav>
@@ -2136,6 +2136,22 @@ html {
             const height = document.documentElement;
             const percent = (window.scrollY / (height.scrollHeight - height.clientHeight)) * 100;
             scrollProgress.style.transform = `scaleX(${percent / 100})`;
+        });
+
+        // Add smooth scroll functionality
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
         });
     });
   </script>
