@@ -1282,6 +1282,11 @@ img:hover {
     overflow: hidden;
 }
 
+.image{
+    height:100%;
+    margin:0;
+}
+
 .vdo {
     width: 100%;
     height: 200px;
