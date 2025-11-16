@@ -1,1535 +1,979 @@
-// ==================== DOM Elements ====================
-const loader = document.querySelector('.loader-container');
-const percentBar = document.querySelector('.percent-bar');
-const customCursor = document.querySelector('.custom-cursor');
-const navToggle = document.querySelector('.nav-toggle');
-const navLinks = document.querySelector('.nav-links');
-const themeToggle = document.querySelector('.theme-toggle');
-const allNavLinks = document.querySelectorAll('.nav-link');
-const nav = document.querySelector('nav');
-const filterBtns = document.querySelectorAll('.filter-btn');
-const projectCards = document.querySelectorAll('.project-card');
-const statsNumbers = document.querySelectorAll('.stat-number');
-const progressBars = document.querySelectorAll('.progress-bar');
-const testimonialDots = document.querySelectorAll('.dot');
-const prevBtn = document.querySelector('.prev');
-const nextBtn = document.querySelector('.next');
-const testimonialCards = document.querySelectorAll('.testimonial-card');
-const testimonialsContainer = document.querySelector('.testimonials-container');
-const glitchText = document.querySelector('.glitch-text');
+// ============================================
+//   LUXE NOIR - Advanced JavaScript
+//   Animations, Interactivity, Real Functionality
+// ============================================
 
-// ==================== General Variables ====================
-let currentTestimonial = 0;
-let isAnimating = false;
-let isLoaded = false;
-let mouseX = 0;
-let mouseY = 0;
-let testimonialInterval;
-let isPaused = false;
-let originalGlitchText = '';
+// GSAP is loaded from CDN, register ScrollTrigger
+if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
-// ==================== Loader Animation ====================
-const startLoading = () => {
-    let loadingProgress = 0;
-    const interval = setInterval(() => {
-        loadingProgress += Math.floor(Math.random() * 10) + 15;
-        if (loadingProgress > 100) loadingProgress = 100;
-        
-        percentBar.style.width = `${loadingProgress}%`;
-        
-        if (loadingProgress === 100) {
-            clearInterval(interval);
-            setTimeout(() => {
-                isLoaded = true;
-                loader.classList.add('hidden');
-                initAnimations();
-                
-                // Add reveal animation to body
-                gsap.to('body', {
-                    opacity: 1,
-                    duration: 0.3,
-                    ease: 'power2.out'
-                });
-    }, 100);
-        }
-    }, 20);
-};
+// ============ STATE MANAGEMENT ============
 
+const state = {
+  cart: JSON.parse(localStorage.getItem("cart")) || [],
+  wishlist: JSON.parse(localStorage.getItem("wishlist")) || [],
+  isDarkMode: localStorage.getItem("theme") === "dark" || true,
+  products: [
+    {
+      id: 1,
+      name: "Elegance Watch",
+      category: "accessories",
+      price: 2499,
+      originalPrice: 3299,
+      rating: 5,
+      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop&q=80",
+    },
+    {
+      id: 2,
+      name: "Signature Leather Jacket",
+      category: "apparel",
+      price: 1899,
+      originalPrice: 2499,
+      rating: 5,
+      image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&q=80",
+    },
+    {
+      id: 3,
+      name: "Premium Sunglasses",
+      category: "accessories",
+      price: 899,
+      originalPrice: 1299,
+      rating: 4,
+      image: "https://images.unsplash.com/photo-1572635196237-14b3f281fb41?w=400&h=400&fit=crop&q=80",
+      fallbackImage: "https://picsum.photos/seed/sunglasses/400/400",
+    },
+    {
+      id: 4,
+      name: "Cashmere Coat",
+      category: "apparel",
+      price: 2199,
+      originalPrice: 2999,
+      rating: 5,
+      image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop&q=80",
+    },
+    {
+      id: 5,
+      name: "Designer Handbag",
+      category: "lifestyle",
+      price: 1599,
+      originalPrice: 2199,
+      rating: 5,
+      image: "https://images.unsplash.com/photo-1520974735194-9506d4b2032f?w=400&h=400&fit=crop&q=80",
+      fallbackImage: "https://picsum.photos/seed/handbag-luxury/400/400",
+    },
+    {
+      id: 6,
+      name: "Silk Scarf Collection",
+      category: "accessories",
+      price: 399,
+      originalPrice: 599,
+      rating: 4,
+      image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop&q=80",
+    },
+    {
+      id: 7,
+      name: "Premium Cologne",
+      category: "lifestyle",
+      price: 249,
+      originalPrice: 349,
+      rating: 5,
+      image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=400&fit=crop&q=80",
+    },
+    {
+      id: 8,
+      name: "Gold Bracelet",
+      category: "accessories",
+      price: 1299,
+      originalPrice: 1799,
+      rating: 5,
+      image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&h=400&fit=crop&q=80",
+    },
+  ],
+  testimonials: [
+    {
+      name: "Alexandra Sterling",
+      position: "Fashion Influencer",
+      text: "Really solid products. Everything I've bought has been worth it.",
+      rating: 5,
+    },
+    {
+      name: "Marcus Johnson",
+      position: "CEO, Luxury Ventures",
+      text: "Good quality stuff. They pay attention to the details that matter.",
+      rating: 5,
+    },
+    {
+      name: "Isabella Romano",
+      position: "Art Collector",
+      text: "Well made products. I'd tell my friends to check them out.",
+      rating: 5,
+    },
+  ],
+}
 
+// ============ PRELOADER ============
 
-// Separate render function for better performance
-const renderCursor = () => {
-    // Apply position with hardware acceleration
-    customCursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
-    
-    // Create trail with lower frequency
-    if (Math.random() > 0.1 && isLoaded) {
-        createCursorTrail();
-    }
-    
-    // Continue the animation loop
-    rafID = requestAnimationFrame(renderCursor);
-};
+window.addEventListener("load", () => {
+  const preloader = document.getElementById("preloader")
+  setTimeout(() => {
+    preloader.style.opacity = "0"
+    preloader.style.pointerEvents = "none"
+    // Trigger hero images animation after preloader
+    document.body.classList.add("preloader-removed")
+  }, 2500)
+})
 
-const expandCursor = () => {
-    if (!isLoaded) return;
-    customCursor.classList.add('expandCursor');
-};
+// ============ THEME TOGGLE ============
 
-const shrinkCursor = () => {
-    if (!isLoaded) return;
-    customCursor.classList.remove('expandCursor');
-};
+const themeToggle = document.getElementById("themeToggle")
+const themeToggleMenu = document.getElementById("themeToggleMenu")
 
-// Simplified trail creation
-const createCursorTrail = () => {
-    const trail = document.createElement('div');
-    trail.className = 'cursor-trail';
-    
-    // Use translate3d for hardware acceleration
-    trail.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
-    
-    // Add random size variation
-    const size = 8 + Math.random() * 7;
-    trail.style.width = `${size}px`;
-    trail.style.height = `${size}px`;
-    
-    document.body.appendChild(trail);
-    
-    // Auto-remove after animation
-    setTimeout(() => {
-        if (trail && trail.parentNode) {
-            document.body.removeChild(trail);
-        }
-    }, 600);
-};
+function updateThemeButtons() {
+  const icon = state.isDarkMode ? "☀️" : "🌙"
+  if (themeToggle) themeToggle.textContent = icon
+  if (themeToggleMenu) themeToggleMenu.textContent = icon
+}
 
-// Add pulsing animation to cursor
-const startCursorPulse = () => {
-    if (!isLoaded) return;
-    
-    setInterval(() => {
-        if (!customCursor.classList.contains('expandCursor')) {
-            // Set custom properties for current position before pulsing
-            customCursor.style.setProperty('--x', `${cursorX}px`);
-            customCursor.style.setProperty('--y', `${cursorY}px`);
-            
-            customCursor.classList.add('pulse');
-            setTimeout(() => {
-                customCursor.classList.remove('pulse');
-            }, 800);
-        }
-    }, 3000);
-};
+function initTheme() {
+  if (state.isDarkMode) {
+    document.body.classList.remove("light-mode")
+  } else {
+    document.body.classList.add("light-mode")
+  }
+  updateThemeButtons()
+}
 
-// Add glitch effect to hero text
-const startGlitchEffect = () => {
-    const glitchText = document.querySelector('.glitch-text');
-    if (!glitchText) return;
-    
-    // Store the original text content
-    const originalName = glitchText.querySelector('.highlight').textContent;
-    
-    // Define the glitch character set
-    const glitchChars = '</;#{*?$%>@&^~[]{}`!|\\';
-    
-    // Function to apply a glitch to the name
-    const applyGlitch = () => {
-        if (!isLoaded) return;
-        
-        const nameElement = glitchText.querySelector('.highlight');
-        if (!nameElement) return;
-        
-        let glitchedName = '';
-        
-        // Determine how many characters to glitch (between 1 and 3)
-        const glitchCount = Math.floor(Math.random() * 3) + 1;
-        
-        // Pick random positions to glitch
-        const positions = [];
-        for (let i = 0; i < glitchCount; i++) {
-            positions.push(Math.floor(Math.random() * originalName.length));
-        }
-        
-        // Create the glitched name
-        for (let i = 0; i < originalName.length; i++) {
-            if (positions.includes(i)) {
-                glitchedName += glitchChars[Math.floor(Math.random() * glitchChars.length)];
-            } else {
-                glitchedName += originalName[i];
-            }
-        }
-        
-        // Apply the glitched name
-        nameElement.textContent = glitchedName;
-        
-        // Reset after a short delay
-        setTimeout(() => {
-            nameElement.textContent = originalName;
-        }, 100);
-    };
-    
-    // Apply glitch at random intervals
-    const randomGlitch = () => {
-        const minDelay = 2000; // Minimum time between glitches (ms)
-        const maxDelay = 5000; // Maximum time between glitches (ms)
-        const glitchDuration = Math.random() * (maxDelay - minDelay) + minDelay;
-        
-        setTimeout(() => {
-            // Apply multiple glitches in quick succession for a more intense effect
-            const glitchIntensity = Math.floor(Math.random() * 3) + 2; // 2-4 glitches in succession
-            
-            for (let i = 0; i < glitchIntensity; i++) {
-                setTimeout(applyGlitch, i * 150);
-            }
-            
-            // Continue with random glitches
-            if (isLoaded) {
-                randomGlitch();
-            }
-        }, glitchDuration);
-    };
-    
-    // Start the random glitching
-    randomGlitch();
-};
+function toggleTheme() {
+  state.isDarkMode = !state.isDarkMode
+  localStorage.setItem("theme", state.isDarkMode ? "dark" : "light")
+  document.body.classList.toggle("light-mode")
+  updateThemeButtons()
+}
 
-// ==================== Navigation ====================
-const toggleMenu = () => {
-    navLinks.classList.toggle('active');
-    if (navLinks.classList.contains('active')) {
-        navToggle.innerHTML = '<i class="fas fa-times"></i>';
-    } else {
-        navToggle.innerHTML = '<i class="fas fa-bars"></i>';
-    }
-};
+if (themeToggle) {
+  themeToggle.addEventListener("click", toggleTheme)
+}
 
-const closeMenu = () => {
-    navLinks.classList.remove('active');
-    navToggle.innerHTML = '<i class="fas fa-bars"></i>';
-};
+if (themeToggleMenu) {
+  themeToggleMenu.addEventListener("click", toggleTheme)
+}
 
-// toggleTheme function is kept for backward compatibility but won't be used
-const toggleTheme = () => {
-    // This function is kept for backward compatibility
-    // But we're forcing dark mode
-    document.body.classList.add('dark-mode');
-    localStorage.setItem('theme', 'dark');
-};
+// ============ NAVIGATION ANIMATIONS ============
 
-const checkTheme = () => {
-    // Always use dark mode
-    localStorage.setItem('theme', 'dark');
-    // Add dark mode if it was not previously set
-    document.body.classList.add('dark-mode');
-};
+const navbar = document.getElementById("navbar")
+const navLinks = document.querySelectorAll(".nav-link")
+const navLinksContainer = document.getElementById("navLinks")
 
-const handleScroll = () => {
-    const scrollPos = window.scrollY;
-    
-    if (scrollPos > 50) {
-        nav.classList.add('scrolled');
-    } else {
-        nav.classList.remove('scrolled');
-    }
-    
-    // Highlight active nav link based on scroll position
-    const sections = document.querySelectorAll('section');
-    
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop - 100;
-        const sectionHeight = section.offsetHeight;
-        const sectionId = section.getAttribute('id');
-        
-        if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-            allNavLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${sectionId}`) {
-                    link.classList.add('active');
-                }
-            });
-        }
-    });
-};
-
-// ==================== Projects Filter ====================
-const filterProjects = (category) => {
-    projectCards.forEach(card => {
-        const cardCategory = card.dataset.category;
-        
-        if (category === 'all' || cardCategory === category) {
-            card.classList.add('visible');
-            gsap.to(card, {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                duration: 0.5,
-                ease: 'power2.out',
-                delay: Math.random() * 0.3
-            });
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 50) {
+    navbar.classList.add("scrolled")
         } else {
-            card.classList.remove('visible');
-            gsap.to(card, {
-                opacity: 0.3,
-                y: 30,
-                scale: 0.95,
-                duration: 0.5,
-                ease: 'power2.out'
-            });
-        }
-    });
-};
+    navbar.classList.remove("scrolled")
+  }
+})
 
-// ==================== Stats Counter Animation ====================
-const animateStats = () => {
-    statsNumbers.forEach(stat => {
-        const target = parseInt(stat.dataset.target);
-        let count = 0;
-        const increment = target / 50;
-        
-        const updateCount = () => {
-            if (count < target) {
-                count += increment;
-                stat.textContent = Math.ceil(count);
-                setTimeout(updateCount, 30);
-            } else {
-                stat.textContent = target;
-            }
-        };
-        
-        updateCount();
-    });
-};
+navLinks.forEach((link) => {
+  link.addEventListener("click", (e) => {
+    navLinks.forEach((l) => l.classList.remove("active"))
+    e.target.classList.add("active")
+    
+  })
+})
 
-// ==================== Progress Bars Animation ====================
-const animateProgressBars = () => {
-    progressBars.forEach(bar => {
-        const percent = bar.dataset.percent;
-        gsap.to(bar, {
-            width: `${percent}%`,
-            duration: 1.5,
-            ease: 'power2.out'
-        });
-    });
-};
+// ============ SMOOTH SCROLL ============
 
-// ==================== Testimonial Slider ====================
-const showTestimonial = (index) => {
-    try {
-        // Prevent multiple animations from running simultaneously
-        if (isAnimating) return;
-        isAnimating = true;
-        
-        console.log("Showing testimonial:", index);
-        
-        // Safety check for valid index
-        if (index < 0 || index >= testimonialCards.length) {
-            console.error("Invalid testimonial index:", index);
-            isAnimating = false;
-            return;
-        }
-        
-        // Update dots
-        testimonialDots.forEach(dot => {
-            dot.classList.remove('active');
-            dot.classList.remove('pulsing');
-        });
-        
-        // Safety check before accessing dots array
-        if (testimonialDots[index]) {
-            testimonialDots[index].classList.add('active');
-            
-            // Add pulsing animation if not paused
-            if (!isPaused) {
-                testimonialDots[index].classList.add('pulsing');
-            }
-        }
-        
-        // Simplify animation for better reliability
-        // First hide all cards with simple transitions
-        testimonialCards.forEach(card => {
-            card.style.opacity = '0';
-            card.style.display = 'none';
-        });
-        
-        // Then show the selected card
-        const selectedCard = testimonialCards[index];
-        if (selectedCard) {
-            selectedCard.style.display = 'block';
-            
-            // Use setTimeout to ensure display change has taken effect
-            setTimeout(() => {
-                selectedCard.style.opacity = '1';
-                
-                // Mark animation as complete after transition
-                setTimeout(() => {
-                    isAnimating = false;
-                }, 800); // Match transition duration
-            }, 50);
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener("click", function (e) {
+    e.preventDefault()
+    const target = document.querySelector(this.getAttribute("href"))
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" })
+    }
+  })
+})
+
+// ============ CART FUNCTIONALITY ============
+
+const cartBtn = document.getElementById("cartBtn")
+const cartModal = document.getElementById("cartModal")
+const closeCart = document.getElementById("closeCart")
+const cartCount = document.getElementById("cartCount")
+const cartItems = document.getElementById("cartItems")
+const cartTotal = document.getElementById("cartTotal")
+
+function updateCartCount() {
+  cartCount.textContent = state.cart.length
+  updateCartModal()
+}
+
+function addToCart(productId) {
+  const product = state.products.find((p) => p.id === productId)
+  if (product) {
+    state.cart.push(product)
+    localStorage.setItem("cart", JSON.stringify(state.cart))
+    updateCartCount()
+    showNotification(`${product.name} added to cart!`)
+  }
+}
+
+function removeFromCart(index) {
+  state.cart.splice(index, 1)
+  localStorage.setItem("cart", JSON.stringify(state.cart))
+  updateCartCount()
+}
+
+function updateCartModal() {
+  cartItems.innerHTML = ""
+  let total = 0
+
+  state.cart.forEach((item, index) => {
+    total += item.price
+    const cartItem = document.createElement("div")
+    cartItem.className = "cart-item"
+    cartItem.innerHTML = `
+      <div class="cart-item-image"></div>
+      <div class="cart-item-details">
+        <p class="cart-item-name">${item.name}</p>
+        <p class="cart-item-price">$${item.price}</p>
+        <button class="remove-item-btn" onclick="removeFromCart(${index})">Remove</button>
+      </div>
+    `
+    cartItems.appendChild(cartItem)
+  })
+
+  cartTotal.textContent = "$" + total.toFixed(2)
+}
+
+cartBtn.addEventListener("click", () => {
+  cartModal.classList.add("active")
+  gsap.to(cartModal, { duration: 0.3, opacity: 1 })
+})
+
+closeCart.addEventListener("click", () => {
+  cartModal.classList.remove("active")
+})
+
+cartModal.addEventListener("click", (e) => {
+  if (e.target === cartModal) {
+    cartModal.classList.remove("active")
+  }
+})
+
+// ============ WISHLIST FUNCTIONALITY ============
+
+const wishlistBtn = document.getElementById("wishlistBtn")
+const wishlistCount = document.getElementById("wishlistCount")
+const wishlistModal = document.getElementById("wishlistModal")
+const closeWishlist = document.getElementById("closeWishlist")
+const wishlistItems = document.getElementById("wishlistItems")
+
+function updateWishlistCount() {
+  wishlistCount.textContent = state.wishlist.length
+  updateWishlistModal()
+}
+
+function addToWishlist(productId) {
+  if (!state.wishlist.find((id) => id === productId)) {
+    state.wishlist.push(productId)
+    localStorage.setItem("wishlist", JSON.stringify(state.wishlist))
+    updateWishlistCount()
+    updateWishlistButtons()
+    showNotification("Added to wishlist!")
+  } else {
+    removeFromWishlist(productId)
+  }
+}
+
+function removeFromWishlist(productId) {
+  state.wishlist = state.wishlist.filter((id) => id !== productId)
+  localStorage.setItem("wishlist", JSON.stringify(state.wishlist))
+  updateWishlistCount()
+  updateWishlistButtons()
+  showNotification("Removed from wishlist!")
+}
+
+function updateWishlistButtons() {
+  document.querySelectorAll('.wishlist-btn-sm').forEach(btn => {
+    const onclickAttr = btn.getAttribute('onclick')
+    if (onclickAttr) {
+      const match = onclickAttr.match(/addToWishlist\((\d+)\)/)
+      if (match) {
+        const productId = parseInt(match[1])
+        if (state.wishlist.includes(productId)) {
+          btn.classList.add('active')
         } else {
-            console.error("Selected testimonial card doesn't exist:", index);
-            isAnimating = false;
+          btn.classList.remove('active')
         }
-        
-        // Update current testimonial index
-        currentTestimonial = index;
-    } catch (error) {
-        console.error("Error in showTestimonial:", error);
-        isAnimating = false;
+      }
     }
-};
+  })
+}
 
-const nextTestimonial = () => {
-    try {
-        // Safety check for testimonials existence
-        if (!testimonialCards || testimonialCards.length === 0) {
-            console.error("Cannot navigate to next testimonial - no testimonials found");
-            return;
-        }
-        
-        // Calculate next index with safety bounds checking
-        const next = (currentTestimonial + 1) % testimonialCards.length;
-        console.log("Moving to next testimonial:", next);
-        showTestimonial(next);
-    } catch (error) {
-        console.error("Error in nextTestimonial:", error);
-        isAnimating = false; // Reset animation flag in case of error
+// Make functions globally accessible for onclick handlers
+window.removeFromWishlist = removeFromWishlist
+window.addToWishlist = addToWishlist
+window.addToCart = addToCart
+
+function updateWishlistModal() {
+  wishlistItems.innerHTML = ""
+  
+  if (state.wishlist.length === 0) {
+    wishlistItems.innerHTML = '<p class="empty-message">Your wishlist is empty</p>'
+    return
+  }
+  
+  state.wishlist.forEach((productId) => {
+    const product = state.products.find((p) => p.id === productId)
+    if (product) {
+      const wishlistItem = document.createElement("div")
+      wishlistItem.className = "wishlist-item"
+      wishlistItem.innerHTML = `
+        <div class="wishlist-item-image">
+          <img src="${product.image}" alt="${product.name}">
+        </div>
+        <div class="wishlist-item-details">
+          <p class="wishlist-item-name">${product.name}</p>
+          <p class="wishlist-item-price">$${product.price}</p>
+          <div class="wishlist-item-actions">
+            <button class="btn btn-primary btn-sm" onclick="addToCart(${product.id})">Add to Cart</button>
+            <button class="remove-item-btn" onclick="removeFromWishlist(${product.id})">Remove</button>
+          </div>
+        </div>
+      `
+      wishlistItems.appendChild(wishlistItem)
     }
-};
+  })
+}
 
-const prevTestimonial = () => {
-    try {
-        // Safety check for testimonials existence
-        if (!testimonialCards || testimonialCards.length === 0) {
-            console.error("Cannot navigate to previous testimonial - no testimonials found");
-            return;
-        }
-        
-        // Calculate previous index with safety bounds checking
-        const prev = (currentTestimonial - 1 + testimonialCards.length) % testimonialCards.length;
-        console.log("Moving to previous testimonial:", prev);
-        showTestimonial(prev);
-    } catch (error) {
-        console.error("Error in prevTestimonial:", error);
-        isAnimating = false; // Reset animation flag in case of error
+wishlistBtn.addEventListener("click", () => {
+  wishlistModal.classList.add("active")
+  updateWishlistModal()
+  if (typeof gsap !== 'undefined') {
+    gsap.to(wishlistModal, { duration: 0.3, opacity: 1 })
+  }
+})
+
+closeWishlist.addEventListener("click", () => {
+  wishlistModal.classList.remove("active")
+})
+
+wishlistModal.addEventListener("click", (e) => {
+  if (e.target === wishlistModal) {
+    wishlistModal.classList.remove("active")
+  }
+})
+
+// ============ RENDER PRODUCTS ============
+
+function renderProducts() {
+  const productsGrid = document.getElementById("productsGrid")
+  productsGrid.innerHTML = ""
+
+  state.products.forEach((product, index) => {
+    const isInWishlist = state.wishlist.includes(product.id)
+    const productCard = document.createElement("div")
+    productCard.className = "product-card"
+    productCard.innerHTML = `
+      <div class="product-image">
+        <img src="${product.image}" alt="${product.name}" onerror="this.onerror=null; this.src='${product.fallbackImage || "https://picsum.photos/seed/luxe/400/400"}'">
+        <div class="product-badge">-${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%</div>
+      </div>
+      <div class="product-info">
+        <p class="product-category">${product.category}</p>
+        <h3 class="product-name">${product.name}</h3>
+        <div class="product-price-rating-wrapper">
+          <div class="product-price">
+            <span class="price-current">$${product.price}</span>
+            <span class="price-original">$${product.originalPrice}</span>
+          </div>
+          <div class="product-rating">
+            ${"★".repeat(product.rating)}${"☆".repeat(5 - product.rating)}
+          </div>
+        </div>
+        <div class="product-actions">
+          <button class="action-btn" onclick="addToCart(${product.id})">Add Cart</button>
+          <button class="wishlist-btn-sm ${isInWishlist ? 'active' : ''}" onclick="addToWishlist(${product.id})">❤️</button>
+        </div>
+      </div>
+    `
+    productsGrid.appendChild(productCard)
+  })
+
+  // Animate products on scroll
+  gsap.to(".product-card", {
+    scrollTrigger: {
+      trigger: ".featured",
+      start: "top center",
+      toggleActions: "play none none none",
+    },
+    opacity: 1,
+    y: 0,
+    stagger: 0.1,
+    duration: 0.6,
+  })
+}
+
+// ============ TESTIMONIALS AUTO-SCROLL ============
+// Success stories section is now always visible, no button needed
+
+// ============ FILTER PRODUCTS ============
+
+const filterBtns = document.querySelectorAll(".filter-btn")
+
+filterBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    filterBtns.forEach((b) => b.classList.remove("active"))
+    btn.classList.add("active")
+
+    const filter = btn.dataset.filter
+    const productCards = document.querySelectorAll(".product-card")
+
+    productCards.forEach((card) => {
+      const category = card.querySelector(".product-category").textContent.toLowerCase()
+      if (filter === "all" || category.includes(filter)) {
+        gsap.to(card, { opacity: 1, duration: 0.3 })
+        card.style.display = "block"
+        } else {
+        gsap.to(card, { opacity: 0, duration: 0.3 })
+        card.style.display = "none"
+      }
+    })
+  })
+})
+
+// ============ COUNTER ANIMATION ============
+
+function animateCounter(element, target) {
+  let current = 0
+  const increment = target / 100
+
+  const interval = setInterval(() => {
+    current += increment
+    if (current >= target) {
+      current = target
+      clearInterval(interval)
     }
-};
+    element.textContent = current >= 100 ? Math.floor(current) : current.toFixed(0)
 
-// Auto slide testimonials - improved reliability
-const startTestimonialAutoSlide = () => {
-    try {
-        // Always clear any existing interval first
-        stopTestimonialAutoSlide(); 
-        
-        // Set up the interval with error handling
-        testimonialInterval = setInterval(() => {
-            try {
-                if (!isPaused && !isAnimating) {
-                    console.log("Auto-advancing testimonial");
-                    nextTestimonial();
-                }
-            } catch (error) {
-                console.error("Error in testimonial auto-slide:", error);
-            }
-        }, 10000); // Increased to 10 seconds for better user experience
-        
-        // Add pulse animation to active dot - with safety check
-        const activeDot = document.querySelector('.dot.active');
-        if (activeDot) {
-            activeDot.classList.add('pulsing');
-        }
-        
-        console.log("Testimonial auto-slide started");
-    } catch (error) {
-        console.error("Error starting testimonial auto-slide:", error);
+    // Format numbers with K, M suffix
+    if (current >= 1000 && current < 1000000) {
+      element.textContent = (current / 1000).toFixed(0) + "K"
+    } else if (current >= 1000000) {
+      element.textContent = (current / 1000000).toFixed(0) + "M"
     }
-};
+  }, 30)
+}
 
-const stopTestimonialAutoSlide = () => {
-    try {
-        if (testimonialInterval) {
-            clearInterval(testimonialInterval);
-            testimonialInterval = null;
-            console.log("Testimonial auto-slide stopped");
-        }
-    } catch (error) {
-        console.error("Error stopping testimonial auto-slide:", error);
-    }
-};
+// ============ SCROLL ANIMATIONS ============
 
+// Hero title animation
+gsap.to(".hero-title .word", {
+  scrollTrigger: {
+    trigger: ".hero",
+    start: "top center",
+    toggleActions: "play none none none",
+  },
+  opacity: 1,
+  y: 0,
+  stagger: 0.1,
+  duration: 0.8,
+})
 
+// Stats counter animation
+ScrollTrigger.create({
+  trigger: ".stats",
+  onEnter: () => {
+    document.querySelectorAll(".stat-card").forEach((card) => {
+      const target = Number.parseInt(card.dataset.number)
+      animateCounter(card.querySelector(".stat-number"), target)
+    })
+  },
+  once: true,
+})
 
-// ==================== GSAP Animations ====================
-const initAnimations = () => {
-    console.log("Initializing all animations...");
-    
-    // Register ScrollTrigger plugin
-    gsap.registerPlugin(ScrollTrigger);
-    
-    // Project cards reveal animation
-    gsap.utils.toArray('.project-card').forEach((card, i) => {
-        gsap.from(card, {
+// Hero stats counter animation
+ScrollTrigger.create({
+  trigger: ".hero",
+  start: "top 80%",
+  onEnter: () => {
+    document.querySelectorAll(".hero-stat-number").forEach((stat) => {
+      const dataNumber = stat.getAttribute("data-number")
+      if (!dataNumber) return
+      let target
+      if (dataNumber.includes("K")) {
+        target = parseFloat(dataNumber.replace("K", "")) * 1000
+      } else {
+        target = Number.parseInt(dataNumber)
+      }
+      if (target && !isNaN(target)) {
+        animateCounter(stat, target)
+      }
+    })
+  },
+  once: true,
+})
+
+// Product cards animation on scroll
+gsap.to(".product-card", {
+  scrollTrigger: {
+    trigger: ".featured",
+    start: "top 80%",
+    toggleActions: "play none none none",
+  },
+            opacity: 1,
+  y: 0,
+  stagger: 0.05,
+  duration: 0.6,
+})
+
+// Section fade-in animations
+document.querySelectorAll(".section-header").forEach((header) => {
+  gsap.to(header, {
+    scrollTrigger: {
+      trigger: header,
+      start: "top 80%",
+      toggleActions: "play none none none",
+    },
+    opacity: 1,
+    y: 0,
+    duration: 0.8,
+  })
+})
+
+// Collection items scroll animations
+if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  gsap.to(".collection-item", {
+    scrollTrigger: {
+      trigger: ".collection",
+      start: "top 70%",
+      toggleActions: "play none none none",
+    },
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    stagger: 0.2,
+    duration: 0.8,
+    ease: "power3.out",
+  })
+  
+  // Parallax effect for collection images
+  gsap.to(".collection-image img", {
+    scrollTrigger: {
+      trigger: ".collection-item",
+      start: "top bottom",
+      end: "bottom top",
+      scrub: 1,
+    },
+    y: -30,
+    ease: "none",
+  })
+}
+
+// Testimonials section animations
+if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  gsap.to(".testimonials-hero", {
+    scrollTrigger: {
+      trigger: ".testimonials",
+      start: "top 70%",
+      toggleActions: "play none none none",
+    },
+    opacity: 1,
+    y: 0,
+    duration: 1,
+    ease: "power3.out",
+  })
+}
+
+// About section animations
+if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  gsap.to(".about-image", {
+    scrollTrigger: {
+      trigger: ".about",
+      start: "top 70%",
+      toggleActions: "play none none none",
+    },
+    opacity: 1,
+    x: 0,
+    duration: 1,
+    ease: "power3.out",
+  })
+
+  gsap.to(".about-content", {
             scrollTrigger: {
-                trigger: '.projects-section',
-                start: 'top bottom-=100',
-                toggleActions: 'play none none none'
-            },
-            y: 100,
-            opacity: 0,
+      trigger: ".about",
+      start: "top 70%",
+      toggleActions: "play none none none",
+    },
+    opacity: 1,
+    x: 0,
+    duration: 1,
+    ease: "power3.out",
+  })
+}
+
+// Stats cards scroll animations
+if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  gsap.to(".stat-card", {
+    scrollTrigger: {
+      trigger: ".stats",
+      start: "top 70%",
+      toggleActions: "play none none none",
+    },
+            opacity: 1,
+    y: 0,
+    scale: 1,
+    stagger: 0.1,
             duration: 0.8,
-            delay: i * 0.1,
-            onStart: () => {
-                card.classList.add('visible');
-            }
-        });
-    });
-    
-    // Skills cards reveal animation
-    gsap.utils.toArray('.skill-card').forEach((card, i) => {
-        gsap.from(card, {
+    ease: "elastic.out(1, 0.5)",
+  })
+}
+
+// Smooth reveal animation for filter buttons
+if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  gsap.from(".filter-btn", {
             scrollTrigger: {
-                trigger: card,
-                start: 'top bottom-=100',
-                toggleActions: 'play none none none'
-            },
-            y: 50,
-            opacity: 0,
-            duration: 0.6,
-            delay: i * 0.1
-        });
-    });
-    
-    // About section animation
-    gsap.from('.about-text', {
-        scrollTrigger: {
-            trigger: '.about-text',
-            start: 'top bottom-=100',
-            toggleActions: 'play none none none'
-        },
-        x: -100,
-        opacity: 0,
-        duration: 1
-    });
-    
-    gsap.from('.about-image', {
-        scrollTrigger: {
-            trigger: '.about-image',
-            start: 'top bottom-=100',
-            toggleActions: 'play none none none'
-        },
-        x: 100,
-        opacity: 0,
-        duration: 1
-    });
-    
-    // Contact section animation - basic animations (keeping for backwards compatibility)
-    gsap.from('.contact-info', {
-        scrollTrigger: {
-            trigger: '.contact-info',
-            start: 'top bottom-=100',
-            toggleActions: 'play none none none'
-        },
-        x: -100,
-        opacity: 0,
-        duration: 1
-    });
-    
-    gsap.from('.contact-form-container', {
-        scrollTrigger: {
-            trigger: '.contact-form-container',
-            start: 'top bottom-=100',
-            toggleActions: 'play none none none'
-        },
-        x: 100,
-        opacity: 0,
-        duration: 1
-    });
-    
-    // Stats animation
-    ScrollTrigger.create({
-        trigger: '.stats-container',
-        start: 'top bottom-=150',
-        onEnter: () => animateStats()
-    });
-    
-    // Progress bars animation
-    ScrollTrigger.create({
-        trigger: '.skills-grid',
-        start: 'top bottom-=150',
-        onEnter: () => animateProgressBars()
-    });
-    
-    // Explicitly call the contact animations
-    console.log("About to initialize contact animations...");
-    initContactAnimations();
-};
+      trigger: ".featured",
+      start: "top 80%",
+      toggleActions: "play none none none",
+    },
+    opacity: 0,
+    y: 20,
+    stagger: 0.1,
+    duration: 0.6,
+  })
+}
 
-// ==================== THREE.JS 3D ANIMATIONS ====================
-
-// Hero Section 3D Animation
-const initHero3D = () => {
-    // If we're on mobile and the flag is set, don't initialize
-    if (window.preventHero3D) {
-        return () => {}; // Return empty cleanup function
-    }
-    
-    const container = document.getElementById('hero-3d-space');
-    
-    // Scene setup
-    const scene = new THREE.Scene();
-    
-    // Camera setup
-    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.z = 20;
-    
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
-    
-    // Particles
-    const particlesGeometry = new THREE.BufferGeometry();
-    const particlesCount = 2000;
-    
-    const posArray = new Float32Array(particlesCount * 3);
-    
-    for (let i = 0; i < particlesCount * 3; i++) {
-        posArray[i] = (Math.random() - 0.5) * 50;
-    }
-    
-    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-    
-    // Material
-    const particlesMaterial = new THREE.PointsMaterial({
-        size: 0.1,
-        color: 0x6c63ff, // Primary theme color
-        transparent: true,
-        opacity: 0.8,
-        blending: THREE.AdditiveBlending
-    });
-    
-    // Mesh
-    const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-    scene.add(particlesMesh);
-    
-    // Add a torus knot for visual interest
-    const geometry = new THREE.TorusKnotGeometry(5, 1.5, 100, 16);
-    const material = new THREE.MeshBasicMaterial({ 
-        color: 0x6c63ff, // Primary theme color
-        wireframe: true,
-        transparent: true,
-        opacity: 0.3
-    });
-    const torusKnot = new THREE.Mesh(geometry, material);
-    scene.add(torusKnot);
-    
-    // Mouse movement effect
-    let mouseX = 0;
-    let mouseY = 0;
-    
-    const handleMouseMove = (e) => {
-        mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-        mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-    };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    
-    // Animation
-    const animate = () => {
-        requestAnimationFrame(animate);
-        
-        particlesMesh.rotation.x += 0.001;
-        particlesMesh.rotation.y += 0.001;
-        
-        torusKnot.rotation.x += 0.005;
-        torusKnot.rotation.y += 0.005;
-        
-        // Responsive to mouse
-        particlesMesh.rotation.x += mouseY * 0.01;
-        particlesMesh.rotation.y += mouseX * 0.01;
-        
-        torusKnot.rotation.x += mouseY * 0.01;
-        torusKnot.rotation.y += mouseX * 0.01;
-        
-        renderer.render(scene, camera);
-    };
-    
-    animate();
-    
-    // Handle resize
-    const handleResize = () => {
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    // Clean up function
-    return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('resize', handleResize);
-        container.removeChild(renderer.domElement);
-    };
-};
-
-// Skills Section 3D Animation
-const initSkills3D = () => {
-    const container = document.getElementById('skills-3d-space');
-    
-    // Scene setup
-    const scene = new THREE.Scene();
-    
-    // Camera setup
-    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.z = 30;
-    
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
-    
-    // Create particles for a premium look
-    const particlesGeometry = new THREE.BufferGeometry();
-    const particleCount = 700;
-    
-    const posArray = new Float32Array(particleCount * 3);
-    const scaleArray = new Float32Array(particleCount);
-    
-    for (let i = 0; i < particleCount; i++) {
-        // Position particles in a sphere-like shape
-        const radius = 25 + Math.random() * 15;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.random() * Math.PI;
-        
-        posArray[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-        posArray[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-        posArray[i * 3 + 2] = radius * Math.cos(phi);
-        
-        // Random scales for particles
-        scaleArray[i] = Math.random() * 1.5 + 0.5;
-    }
-    
-    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-    particlesGeometry.setAttribute('scale', new THREE.BufferAttribute(scaleArray, 1));
-    
-    // Custom shader material for more beautiful particles
-    const particlesMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-            color1: { value: new THREE.Color(0x6c63ff) },
-            color2: { value: new THREE.Color(0x00c9a7) },
-            time: { value: 0 }
-        },
-        vertexShader: `
-            attribute float scale;
-            uniform float time;
-            varying vec3 vColor;
-            
-            void main() {
-                // Oscillating movement
-                vec3 pos = position;
-                pos.x += sin(pos.y * 0.05 + time) * 1.5;
-                pos.y += cos(pos.x * 0.05 + time) * 1.5;
-                pos.z += sin(pos.z * 0.05 + time) * 1.5;
-                
-                // Calculate color based on position
-                float colorMix = smoothstep(-20.0, 20.0, position.y);
-                vColor = mix(vec3(0.424, 0.388, 1.0), vec3(0.0, 0.788, 0.655), colorMix);
-                
-                // Position and size
-                vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-                gl_PointSize = scale * (300.0 / -mvPosition.z);
-                gl_Position = projectionMatrix * mvPosition;
-            }
-        `,
-        fragmentShader: `
-            varying vec3 vColor;
-            
-            void main() {
-                // Create a circular particle
-                float distanceToCenter = length(gl_PointCoord - vec2(0.5));
-                float strength = 1.0 - smoothstep(0.0, 0.5, distanceToCenter);
-                
-                // Apply color and fading edges
-                gl_FragColor = vec4(vColor, strength * 0.7);
-            }
-        `,
-            transparent: true,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false
-    });
-    
-    // Create the particle system
-    const particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
-    scene.add(particleSystem);
-    
-    // Create glowing tech icons (small glowing spheres)
-    const iconGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-    const iconCount = 10;
-    const icons = [];
-    
-    for (let i = 0; i < iconCount; i++) {
-        // Create a glowing material
-        const color = i % 2 === 0 ? 0x6c63ff : 0x00c9a7;
-        const iconMaterial = new THREE.MeshBasicMaterial({
-            color: color,
-            transparent: true,
-            opacity: 0.8
-        });
-        
-        const icon = new THREE.Mesh(iconGeometry, iconMaterial);
-        
-        // Position randomly but more concentrated near the center
-        const distance = 8 + Math.random() * 10;
-        const angle = Math.random() * Math.PI * 2;
-        const height = (Math.random() - 0.5) * 20;
-        
-        icon.position.x = Math.cos(angle) * distance;
-        icon.position.y = height;
-        icon.position.z = Math.sin(angle) * distance;
-        
-        // Add a point light for glow effect
-        const light = new THREE.PointLight(color, 1, 10);
-        light.position.copy(icon.position);
-        
-        // Store icon properties for animation
-        icon.userData = {
-            orbitRadius: distance,
-            orbitAngle: angle,
-            orbitSpeed: 0.001 + Math.random() * 0.003,
-            pulseSpeed: 0.01 + Math.random() * 0.03,
-            light: light
-        };
-        
-        icons.push(icon);
-        scene.add(icon);
-        scene.add(light);
-    }
-    
-    // Add connecting lines between nearby icons (like a network)
-    const linesMaterial = new THREE.LineBasicMaterial({
-        color: 0x6c63ff,
-        transparent: true,
-        opacity: 0.2
-    });
-    
-    const linesGeometry = new THREE.BufferGeometry();
-    const linesGroup = new THREE.Group();
-    scene.add(linesGroup);
-    
-    // Function to update the lines
-    const updateLines = () => {
-        linesGroup.clear();
-        
-        for (let i = 0; i < icons.length; i++) {
-            for (let j = i + 1; j < icons.length; j++) {
-                const distance = icons[i].position.distanceTo(icons[j].position);
-                
-                if (distance < 15) {
-                    const opacity = 1 - distance / 15;
-                    const lineMaterial = new THREE.LineBasicMaterial({
-                        color: 0x6c63ff,
-                        transparent: true,
-                        opacity: opacity * 0.3
-                    });
-                    
-                    const points = [icons[i].position.clone(), icons[j].position.clone()];
-                    const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                    const line = new THREE.Line(lineGeometry, lineMaterial);
-                    linesGroup.add(line);
-                }
-            }
-        }
-    };
-    
-    // Animation
-    let time = 0;
-    const animate = () => {
-        requestAnimationFrame(animate);
-        
-        time += 0.01;
-        particlesMaterial.uniforms.time.value = time;
-        
-        // Slowly rotate the entire particle system
-        particleSystem.rotation.y += 0.001;
-        particleSystem.rotation.x = Math.sin(time * 0.1) * 0.1;
-        
-        // Animate each tech icon
-        icons.forEach(icon => {
-            // Orbit animation
-            icon.userData.orbitAngle += icon.userData.orbitSpeed;
-            icon.position.x = Math.cos(icon.userData.orbitAngle) * icon.userData.orbitRadius;
-            icon.position.z = Math.sin(icon.userData.orbitAngle) * icon.userData.orbitRadius;
-            
-            // Pulsing animation
-            const pulse = Math.sin(time * icon.userData.pulseSpeed) * 0.3 + 0.7;
-            icon.scale.set(pulse, pulse, pulse);
-            
-            // Update light position
-            icon.userData.light.position.copy(icon.position);
-            icon.userData.light.intensity = pulse;
-        });
-        
-        // Update connecting lines
-        if (time % 0.5 < 0.01) {
-            updateLines();
-        }
-        
-        renderer.render(scene, camera);
-    };
-    
-    animate();
-    
-    // Handle resize
-    const handleResize = () => {
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    // Handle mouse movement for interactive effect
-    const handleMouseMove = (e) => {
-        const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-        const mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-        
-        // Subtle rotation based on mouse position
-        particleSystem.rotation.y = mouseX * 0.3;
-        particleSystem.rotation.x = mouseY * 0.3;
-    };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    
-    // Clean up function
-    return () => {
-        window.removeEventListener('resize', handleResize);
-        window.removeEventListener('mousemove', handleMouseMove);
-        container.removeChild(renderer.domElement);
-    };
-};
-
-// Skills Progress Animation
-const animateSkills = () => {
-    const skillElements = document.querySelectorAll('.premium-skill-progress');
-    
-    skillElements.forEach(skill => {
-        // Get the target width from inline style
-        const targetWidth = skill.style.width;
-        
-        // Set all skills to consistent silver styling
-        skill.style.background = "linear-gradient(90deg, rgba(192, 192, 200, 1), rgba(220, 220, 230, 1), rgba(192, 192, 200, 1), rgba(230, 230, 240, 1))";
-        skill.style.backgroundSize = "200% 100%";
-        skill.style.boxShadow = "0 0 8px rgba(192, 192, 200, 0.6)";
-        
-        // Force the width to match the percentage immediately
-        skill.style.width = targetWidth;
-        
-        // Add animation manually
-        skill.style.animation = "silverShine 2s infinite ease-in-out";
-    });
-    
-    // Add floating skill elements to the 3D container
-    addFloatingSkills();
-};
-
-// Add floating skill elements to the background
-const addFloatingSkills = () => {
-    const container = document.getElementById('skills-3d-space');
-    if (!container) return;
-    
-    // Only add floating skills if they don't already exist
-    if (container.querySelector('.floating-skill')) return;
-    
-    const skills = [
-        'HTML5', 'CSS3', 'JavaScript', 'React', 
-        'Node.js', 'SASS', 'Git', 'UI/UX'
-    ];
-    
-    const colors = [
-        '#6c63ff', '#00c9a7', '#ff6b6b', '#feca57',
-        '#1dd1a1', '#ff9ff3', '#54a0ff', '#5f27cd'
-    ];
-    
-    // Create floating skill elements
-    skills.forEach((skill, index) => {
-        const element = document.createElement('div');
-        element.className = 'floating-skill';
-        element.textContent = skill;
-        element.style.backgroundColor = colors[index % colors.length];
-        
-        // Random positioning
-        const xPos = Math.random() * 100;
-        const yPos = Math.random() * 100;
-        const zPos = Math.random() * 50 - 25;
-        const scale = 0.8 + Math.random() * 0.4;
-        const rotation = Math.random() * 20 - 10;
-        
-        element.style.left = `${xPos}%`;
-        element.style.top = `${yPos}%`;
-        element.style.transform = `translateZ(${zPos}px) scale(${scale}) rotate(${rotation}deg)`;
-        
-        // Animation duration and delay
-        const duration = 15 + Math.random() * 20;
-        const delay = Math.random() * -20;
-        
-        element.style.animationDuration = `${duration}s`;
-        element.style.animationDelay = `${delay}s`;
-        
-        container.appendChild(element);
-    });
-};
-
-// Contact Section Animations
-const initContactAnimations = () => {
-    console.log("Contact animations initializing...");
-    
-    const contactInfo = document.querySelector('.contact-info');
-    const contactForm = document.querySelector('.contact-form-container');
-    const contactItems = document.querySelectorAll('.contact-item');
-    const socialIcons = document.querySelectorAll('.contact-social .social-icon');
-    
-    // Set initial visibility for all elements
-    if (contactInfo) contactInfo.style.opacity = "1";
-    if (contactForm) contactForm.style.opacity = "1";
-    contactItems.forEach(item => item.style.opacity = "1");
-    socialIcons.forEach(icon => icon.style.opacity = "1");
-    
-    console.log("Contact elements found:", {
-        "contactInfo": contactInfo ? "Found" : "Not found",
-        "contactForm": contactForm ? "Found" : "Not found",
-        "contactItems": contactItems.length,
-        "socialIcons": socialIcons.length
-    });
-    
-    // Only run GSAP animations if ScrollTrigger is available
-    if (window.ScrollTrigger && gsap) {
-        // Staggered animation for contact items
-        gsap.from(contactItems, {
+// CTA section animation
+if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  gsap.to(".cta", {
             scrollTrigger: {
-                trigger: contactInfo,
-                start: 'top bottom-=100',
-                toggleActions: 'play none none none'
-            },
-            opacity: 0.5, // Start with partial opacity
-            x: -50,
-            stagger: 0.15,
-            duration: 0.8,
-            ease: 'power2.out'
-        });
-        
-        // Animation for contact form
-        gsap.from(contactForm, {
-            scrollTrigger: {
-                trigger: contactForm,
-                start: 'top bottom-=100',
-                toggleActions: 'play none none none'
-            },
-            opacity: 0.5, // Start with partial opacity
-            y: 50,
-            duration: 1,
-            ease: 'power3.out'
-        });
-        
-        // Staggered animation for social icons
-        gsap.from(socialIcons, {
-            scrollTrigger: {
-                trigger: '.contact-social',
-                start: 'top bottom-=50',
-                toggleActions: 'play none none none'
-            },
-            opacity: 0.5, // Start with partial opacity
-            y: 30,
-            scale: 0.5,
-            stagger: 0.1,
-            duration: 0.6,
-            ease: 'back.out(1.7)'
-        });
-        
-        console.log("GSAP animations applied");
-    } else {
-        console.log("GSAP or ScrollTrigger not available, skipping animations");
+      trigger: ".cta",
+      start: "top 80%",
+      toggleActions: "play none none none",
+    },
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    duration: 1,
+    ease: "power3.out",
+  })
+}
+
+// Footer fade-in
+if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  gsap.to(".footer", {
+    scrollTrigger: {
+      trigger: ".footer",
+      start: "top 90%",
+      toggleActions: "play none none none",
+    },
+    opacity: 1,
+    y: 0,
+    duration: 1,
+  })
+}
+
+// ============ AESTHETIC TEXT SECTIONS ANIMATIONS ============
+
+if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  document.querySelectorAll(".aesthetic-text-large").forEach((text) => {
+    // Parallax effect - text moves slower than scroll
+    gsap.to(text, {
+      scrollTrigger: {
+        trigger: text.closest(".aesthetic-text-section"),
+        start: "top bottom",
+        end: "bottom top",
+        scrub: 2,
+      },
+      y: -150,
+      scale: 1.15,
+      ease: "none",
+    })
+    
+    // Fade in/out on scroll with opacity variation
+    gsap.to(text, {
+      scrollTrigger: {
+        trigger: text.closest(".aesthetic-text-section"),
+        start: "top 80%",
+        end: "bottom 20%",
+        scrub: 1.5,
+      },
+      opacity: 0.25,
+      ease: "none",
+    })
+    
+    // Initial reveal animation
+    gsap.from(text, {
+      scrollTrigger: {
+        trigger: text.closest(".aesthetic-text-section"),
+        start: "top 85%",
+        toggleActions: "play none none none",
+      },
+      opacity: 0,
+      scale: 0.7,
+      y: 100,
+      duration: 1.5,
+      ease: "power4.out",
+    })
+    
+    // Rotation effect on scroll
+    gsap.to(text, {
+      scrollTrigger: {
+        trigger: text.closest(".aesthetic-text-section"),
+        start: "top bottom",
+        end: "bottom top",
+        scrub: 3,
+      },
+      rotation: 2,
+      ease: "none",
+    })
+  })
+  
+  // Section wrapper parallax
+  document.querySelectorAll(".aesthetic-text-section").forEach((section) => {
+    gsap.to(section, {
+      scrollTrigger: {
+        trigger: section,
+        start: "top bottom",
+        end: "bottom top",
+        scrub: 1,
+      },
+      y: -50,
+      ease: "none",
+    })
+  })
+}
+
+// ============ PARALLAX EFFECT ============
+
+const heroImage = document.querySelector(".hero-image")
+
+if (heroImage && typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+  gsap.to(heroImage, {
+    scrollTrigger: {
+      trigger: ".hero",
+      start: "top top",
+      end: "bottom top",
+      scrub: 1,
+    },
+    y: 100,
+    scale: 1.05,
+    ease: "none",
+  })
+}
+
+// ============ MAGNETIC HOVER EFFECT ============
+
+document.querySelectorAll(".btn").forEach((btn) => {
+  btn.addEventListener("mousemove", (e) => {
+    const rect = btn.getBoundingClientRect()
+    const x = e.clientX - rect.left - rect.width / 2
+    const y = e.clientY - rect.top - rect.height / 2
+
+    btn.style.setProperty("--x", x + "px")
+    btn.style.setProperty("--y", y + "px")
+  })
+})
+
+// ============ NOTIFICATION SYSTEM ============
+
+function showNotification(message) {
+  const notification = document.getElementById("notification")
+  notification.textContent = message
+  notification.classList.add("show")
+
+  setTimeout(() => {
+    notification.classList.remove("show")
+  }, 3000)
+}
+
+// ============ NEWSLETTER FORM ============
+
+document.querySelector(".cta-form")?.addEventListener("submit", (e) => {
+  e.preventDefault()
+  const email = e.target.querySelector(".cta-input").value
+  if (email) {
+    showNotification("Welcome to our VIP club! 🎉")
+    e.target.reset()
+  }
+})
+
+// ============ COLLECTION PARALLAX HOVER ============
+
+function initCollectionParallaxHover() {
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  const hasFinePointer = window.matchMedia("(pointer: fine)").matches
+
+  if (prefersReducedMotion || !hasFinePointer) return
+
+  const collectionItems = document.querySelectorAll(".collection-item")
+  if (!collectionItems.length) return
+
+  collectionItems.forEach((item) => {
+    const imageWrapper = item.querySelector(".collection-image")
+    const image = item.querySelector(".collection-image img")
+    const content = item.querySelector(".collection-content")
+    let animationId = null
+    let bounds = null
+
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
+
+    const resetTransforms = () => {
+      item.style.transform = ""
+      if (imageWrapper) imageWrapper.style.transform = ""
+      if (image) image.style.transform = ""
+      if (content) content.style.transform = ""
     }
-    
-    // Form input focus effects
-    const formInputs = document.querySelectorAll('.form-group input, .form-group textarea');
-    
-    formInputs.forEach(input => {
-        // Add active class to parent when input is focused
-        input.addEventListener('focus', () => {
-            input.parentElement.classList.add('input-active');
-        });
-        
-        // Remove active class when input loses focus
-        input.addEventListener('blur', () => {
-            if (input.value.trim() === '') {
-                input.parentElement.classList.remove('input-active');
-            }
-        });
-        
-        // Check if input has value on page load
-        if (input.value.trim() !== '') {
-            input.parentElement.classList.add('input-active');
-        }
-    });
-    
-    // Add subtle parallax effect to contact info
-    window.addEventListener('mousemove', e => {
-        if (!contactInfo) return; // Skip if element not found
-        
-        const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
-        const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
-        
-        gsap.to(contactInfo, {
-            x: moveX,
-            y: moveY,
-            duration: 1,
-            ease: 'power1.out'
-        });
-    });
-};
 
-// Fix for contact section visibility issues
-const fixContactSectionVisibility = () => {
-    console.log("Running contact section visibility fix");
-    
-    // Define all the contact elements we need to target
-    const contactElements = {
-        section: document.querySelector('.contact-section'),
-        content: document.querySelector('.contact-content'),
-        info: document.querySelector('.contact-info'),
-        form: document.querySelector('.contact-form-container'),
-        items: document.querySelectorAll('.contact-item'),
-        social: document.querySelectorAll('.contact-social .social-icon')
-    };
-    
-    // Log what we found
-    console.log("Contact elements found:", {
-        "section": contactElements.section ? "Found" : "Not found",
-        "content": contactElements.content ? "Found" : "Not found",
-        "info": contactElements.info ? "Found" : "Not found",
-        "form": contactElements.form ? "Found" : "Not found",
-        "items": contactElements.items.length,
-        "social": contactElements.social.length
-    });
-    
-    // Force display and visibility on all elements
-    if (contactElements.section) {
-        contactElements.section.style.display = 'block';
-        contactElements.section.style.opacity = '1';
-        contactElements.section.style.visibility = 'visible';
+    const updateTransforms = (xRatio, yRatio) => {
+      const rotateX = (0.5 - yRatio) * 14
+      const rotateY = (xRatio - 0.5) * 16
+      const translateX = (xRatio - 0.5) * 24
+      const translateY = (yRatio - 0.5) * 24
+
+      item.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`
+
+      if (imageWrapper) {
+        imageWrapper.style.transform = `translateX(${translateX * 0.45}px) translateY(${translateY * 0.45}px) scale(1.02)`
+      }
+
+      if (image) {
+        image.style.transform = `translateX(${translateX * -0.4}px) translateY(${translateY * -0.6}px) scale(1.08)`
+      }
+
+      if (content) {
+        content.style.transform = `translateX(${translateX * -0.2}px) translateY(${translateY * -0.2}px)`
+      }
     }
-    
-    if (contactElements.content) {
-        contactElements.content.style.display = 'grid';
-        contactElements.content.style.opacity = '1';
-        contactElements.content.style.visibility = 'visible';
+
+    const handlePointerMove = (event) => {
+      if (!bounds) bounds = item.getBoundingClientRect()
+      const xRatio = clamp((event.clientX - bounds.left) / bounds.width, -0.25, 1.25)
+      const yRatio = clamp((event.clientY - bounds.top) / bounds.height, -0.25, 1.25)
+
+      cancelAnimationFrame(animationId)
+      animationId = requestAnimationFrame(() => updateTransforms(xRatio, yRatio))
     }
-    
-    if (contactElements.info) {
-        contactElements.info.style.display = 'block';
-        contactElements.info.style.opacity = '1';
-        contactElements.info.style.visibility = 'visible';
+
+    const handlePointerEnter = () => {
+      bounds = item.getBoundingClientRect()
+      item.classList.add("is-hovered")
     }
-    
-    if (contactElements.form) {
-        contactElements.form.style.display = 'block';
-        contactElements.form.style.opacity = '1';
-        contactElements.form.style.visibility = 'visible';
+
+    const handlePointerLeave = () => {
+      item.classList.remove("is-hovered")
+      cancelAnimationFrame(animationId)
+      animationId = requestAnimationFrame(() => {
+        resetTransforms()
+      })
+      bounds = null
     }
-    
-    contactElements.items.forEach(item => {
-        item.style.display = 'flex';
-        item.style.opacity = '1';
-        item.style.visibility = 'visible';
-    });
-    
-    contactElements.social.forEach(icon => {
-        icon.style.display = 'flex';
-        icon.style.opacity = '1';
-        icon.style.visibility = 'visible';
-    });
-    
-    // Run multiple times to ensure it works
-    setTimeout(() => {
-        initContactAnimations();
-        console.log("Contact animations re-initialized");
-    }, 500);
-    
-    setTimeout(() => {
-        // Check if elements are actually visible
-        const computedStyles = {
-            section: contactElements.section ? getComputedStyle(contactElements.section) : null,
-            content: contactElements.content ? getComputedStyle(contactElements.content) : null,
-            info: contactElements.info ? getComputedStyle(contactElements.info) : null,
-            form: contactElements.form ? getComputedStyle(contactElements.form) : null
-        };
-        
-        console.log("Contact section visibility check:", {
-            "section": computedStyles.section ? computedStyles.section.display + " / " + computedStyles.section.opacity : "No element",
-            "content": computedStyles.content ? computedStyles.content.display + " / " + computedStyles.content.opacity : "No element",
-            "info": computedStyles.info ? computedStyles.info.display + " / " + computedStyles.info.opacity : "No element",
-            "form": computedStyles.form ? computedStyles.form.display + " / " + computedStyles.form.opacity : "No element"
-        });
-        
-        // Force visibility one more time if needed
-        Object.values(contactElements).forEach(element => {
-            if (element && element.style) {
-                element.style.opacity = '1';
-                element.style.visibility = 'visible';
-            }
-        });
-    }, 1500);
-};
 
-// Call this function after page load
-window.addEventListener('load', () => {
-    setTimeout(fixContactSectionVisibility, 1000);
-    setTimeout(fixContactSectionVisibility, 3000); // Try again after 3 seconds
-});
+    item.addEventListener("pointerenter", handlePointerEnter)
+    item.addEventListener("pointermove", handlePointerMove)
+    item.addEventListener("pointerleave", handlePointerLeave)
+  })
+}
 
-// ==================== Event Listeners ====================
-document.addEventListener('DOMContentLoaded', () => {
-    // Start loader
-    startLoading();
-    
-    // Check theme
-    checkTheme();
-    
-    // Initialize 3D scenes
-    const cleanupHero3D = window.preventHero3D ? (() => {})() : initHero3D();
-    const cleanupSkills3D = initSkills3D();
-    
-    // Initialize cursor pulse animation
-    setTimeout(() => {
-        startCursorPulse();
-    }, 2000);
-    
-    // Initialize glitch text effect
-    setTimeout(() => {
-        startGlitchEffect();
-    }, 2500);
-    
-    // Set initial display for testimonials - with better error handling
-    try {
-        console.log("Initializing testimonials...");
-        
-        // Safety check
-        if (!testimonialCards || testimonialCards.length === 0) {
-            console.warn("No testimonial cards found to initialize");
-            return;
-        }
-        
-        testimonialCards.forEach((card, index) => {
-            try {
-                // Set proper initial state for each card
-                if (index === 0) {
-                    // First card should be visible
-                    card.style.display = 'block';
-                    card.style.opacity = '1';
-                    console.log("First testimonial card initialized");
-                } else {
-                    // Other cards should be hidden
-                    card.style.display = 'none';
-                    card.style.opacity = '0';
-                }
-            } catch (cardError) {
-                console.error("Error setting up testimonial card:", index, cardError);
-            }
-        });
-        
-        // Initialize the dots as well
-        if (testimonialDots && testimonialDots.length > 0) {
-            testimonialDots[0].classList.add('active');
-        }
-    } catch (error) {
-        console.error("Error in testimonial initialization:", error);
+// ============ CHECKOUT ============
+
+document.getElementById("checkoutBtn")?.addEventListener("click", () => {
+  if (state.cart.length === 0) {
+    showNotification("Your cart is empty!")
+  } else {
+    showNotification("Proceeding to checkout... 🛍️")
+    state.cart = []
+    localStorage.removeItem("cart")
+    updateCartCount()
+    cartModal.classList.remove("active")
+  }
+})
+
+// ============ INITIALIZATION ============
+
+document.addEventListener("DOMContentLoaded", () => {
+  initTheme()
+  updateCartCount()
+  updateWishlistCount()
+  updateWishlistModal()
+  updateWishlistButtons()
+  
+  // Initialize testimonials hero animation
+  const testimonialsHero = document.querySelector(".testimonials-hero")
+  if (testimonialsHero) {
+    testimonialsHero.style.opacity = "0"
+    testimonialsHero.style.transform = "translateY(30px)"
+  }
+
+  // Initialize mobile menu as closed
+  const navLinksContainer = document.getElementById("navLinks")
+  if (navLinksContainer && window.innerWidth <= 1024) {
+    navLinksContainer.style.display = "none"
+  }
+
+  // Initialize hero stats to 0
+  document.querySelectorAll(".hero-stat-number").forEach((stat) => {
+    stat.textContent = "0"
+  })
+
+  // Collection card mouse tracking for shine effect
+  document.querySelectorAll(".collection-item").forEach((item) => {
+    const image = item.querySelector(".collection-image")
+    if (image) {
+      item.addEventListener("mousemove", (e) => {
+        const rect = image.getBoundingClientRect()
+        const x = ((e.clientX - rect.left) / rect.width) * 100
+        const y = ((e.clientY - rect.top) / rect.height) * 100
+        image.style.setProperty("--mouse-x", `${x}%`)
+        image.style.setProperty("--mouse-y", `${y}%`)
+      })
     }
-    
-    // Initially show all projects
-    projectCards.forEach(card => {
-        card.classList.add('visible');
-    });
-    
-    // Initialize projects section
-    filterProjects('all');
-    
-    // Start testimonial auto-slide
-    startTestimonialAutoSlide();
-    
-    // Pause testimonial slider on hover or click
-    testimonialsContainer.addEventListener('mouseenter', pauseTestimonialAutoSlide);
-    testimonialsContainer.addEventListener('mouseleave', resumeTestimonialAutoSlide);
-    testimonialDots.forEach(dot => {
-        dot.addEventListener('click', pauseTestimonialAutoSlide);
-    });
-    prevBtn.addEventListener('click', pauseTestimonialAutoSlide);
-    nextBtn.addEventListener('click', pauseTestimonialAutoSlide);
-    
-    // Event listeners
-    document.addEventListener('mousemove', updateCursor);
-    
-    document.querySelectorAll('a, button, .nav-toggle, .theme-toggle, .project-card, .skill-card').forEach(element => {
-        element.addEventListener('mouseenter', expandCursor);
-        element.addEventListener('mouseleave', shrinkCursor);
-    });
-    
-    // ==================== Mobile Navigation ====================
-// Improved mobile navigation with animation
-navToggle.addEventListener('click', () => {
-    navLinks.classList.toggle('active');
-    
-    // Change icon based on menu state
-    if (navLinks.classList.contains('active')) {
-        navToggle.innerHTML = '<i class="fas fa-times"></i>';
-        // Prevent body scrolling when menu is open
-        document.body.style.overflow = 'hidden';
-        
-        // Animate links with staggered delay
-        allNavLinks.forEach((link, index) => {
-            link.style.opacity = '0';
-            link.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                link.style.transition = 'all 0.3s ease';
-                link.style.opacity = '1';
-                link.style.transform = 'translateY(0)';
-            }, 100 + (index * 50));
-        });
-    } else {
-        navToggle.innerHTML = '<i class="fas fa-bars"></i>';
-        // Re-enable scrolling when menu is closed
-        document.body.style.overflow = 'auto';
-    }
-});
+  })
 
-// Close mobile menu when clicking on a link with smooth animation
-allNavLinks.forEach(link => {
-    link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-        navToggle.innerHTML = '<i class="fas fa-bars"></i>';
-        document.body.style.overflow = 'auto';
-    });
-});
+  // Set initial opacity for animated elements
+  document.querySelectorAll(".product-card, .section-header").forEach((el) => {
+    el.style.opacity = "0"
+    el.style.transform = "translateY(20px)"
+  })
+  
+  // Initialize collection items
+  document.querySelectorAll(".collection-item").forEach((el) => {
+    el.style.opacity = "0"
+    el.style.transform = "translateY(50px) scale(0.9)"
+  })
 
-// Close mobile menu when clicking outside
-document.addEventListener('click', (e) => {
-    if (navLinks.classList.contains('active') && 
-        !navLinks.contains(e.target) && 
-        !navToggle.contains(e.target)) {
-        navLinks.classList.remove('active');
-        navToggle.innerHTML = '<i class="fas fa-bars"></i>';
-        document.body.style.overflow = 'auto';
-    }
-});
-    
-  // Theme toggle event listener removed
-    window.addEventListener('scroll', handleScroll);
-    
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            filterProjects(btn.dataset.filter);
-        });
-    });
-    
-    testimonialDots.forEach((dot, index) => {
-        dot.addEventListener('click', () => showTestimonial(index));
-    });
-    
-    prevBtn.addEventListener('click', prevTestimonial);
-    nextBtn.addEventListener('click', nextTestimonial);
-    
-    // Add hover animations to project cards
-    projectCards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            gsap.to(card, {
-                y: -15,
-                scale: 1.03,
-                boxShadow: '0 20px 50px rgba(108, 99, 255, 0.3)',
-                duration: 0.3,
-                ease: 'power2.out'
-            });
-        });
-        
-        card.addEventListener('mouseleave', () => {
-            gsap.to(card, {
-                y: 0,
-                scale: 1,
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-                duration: 0.3,
-                ease: 'power2.out'
-            });
-        });
-    });
-    
-    // Clean up on unload
-    window.addEventListener('unload', () => {
-        cleanupHero3D();
-        cleanupSkills3D();
-        stopTestimonialAutoSlide();
-    });
-    
-    // Initialize skill animations
-    animateSkills();
-    
-    // Initialize contact animations
-    initContactAnimations();
-});
-
-// ==================== Form Submission ====================
-document.addEventListener('submit', function(e) {
-    const form = e.target;
-    
-    if (form.classList.contains('contact-form') || form.classList.contains('newsletter-form')) {
-        e.preventDefault();
-        
-        // Simulate form submission
-        const submitButton = form.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-        
-        submitButton.disabled = true;
-        submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`;
-        
-        setTimeout(() => {
-            form.reset();
-            submitButton.innerHTML = `<i class="fas fa-check"></i> Sent Successfully!`;
-            
-            setTimeout(() => {
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
-            }, 2000);
-        }, 1500);
-    }
-});
-
-// Stop animation when cursor leaves window
-document.addEventListener('mouseleave', () => {
-    if (rafID) {
-        cancelAnimationFrame(rafID);
-        rafID = null;
-    }
-});
-
-// Restart animation when cursor enters window
-document.addEventListener('mouseenter', () => {
-    if (!rafID && isLoaded) {
-        rafID = requestAnimationFrame(renderCursor);
-    }
-});
-
-// Fix contact section visibility on window load
-window.addEventListener('load', () => {
-    // Force display and visibility on all contact elements
-    document.querySelectorAll('.contact-section, .contact-content, .contact-info, .contact-form-container, .contact-item').forEach(el => {
-        el.style.display = '';
-        el.style.opacity = '1';
-        el.style.visibility = 'visible';
-    });
-    
-    // Re-initialize contact animations
-    initContactAnimations();
-    
-    console.log("Window load: Contact section visibility enforced");
-});
-
-
-
-document.addEventListener('DOMContentLoaded',function(){const e=window.matchMedia('(min-width: 768px) and (max-width: 1024px)').matches;if(e){const a=document.querySelector('#about .about-text');a&&(a.style.textAlign='center');const b=document.querySelectorAll('#about .about-text p');b.forEach(c=>{c.style.textAlign='center'});const d=document.querySelector('#about .stats-container');d&&(d.style.display='flex',d.style.justifyContent='center',d.style.margin='2rem auto');const f=document.querySelectorAll('#about .stat-item');f.forEach(g=>{g.style.textAlign='center'})}})
-
-
-
-    // Glitch Text Effect for Hero Section
-document.addEventListener('DOMContentLoaded', () => {
-    // Wait for page to load completely and other animations to finish
-    setTimeout(initGlitchEffect, 2200);
-});
-
-function initGlitchEffect() {
-    const nameElement = document.querySelector('.glitch-text .highlight');
-    if (!nameElement) return;
-    
-    const originalText = nameElement.getAttribute('data-glitch') || nameElement.textContent;
-    // Extended glitch character set for more variety
-    const glitchChars = '</>;#{*?$%>@&^~[]{}`!|\\+=-_:;"\',.0123456789';
-    
-    // Function to create a glitched version of the text
-    function glitchText() {
-        let glitched = '';
-        // Increase glitch count for more intensity (2-5 characters)
-        const glitchCount = Math.floor(Math.random() * 4) + 2;
-        const positions = [];
-        
-        // Randomly select positions to glitch
-        for (let i = 0; i < glitchCount; i++) {
-            positions.push(Math.floor(Math.random() * originalText.length));
-        }
-        
-        // Create glitched text by replacing characters at random positions
-        for (let i = 0; i < originalText.length; i++) {
-            if (positions.includes(i)) {
-                glitched += glitchChars.charAt(Math.floor(Math.random() * glitchChars.length));
-            } else {
-                glitched += originalText.charAt(i);
-            }
-        }
-        
-        return glitched;
-    }
-    
-    // Apply the glitch effect and then restore original text
-    function applyGlitch() {
-        // Apply glitch
-        nameElement.textContent = glitchText();
-        
-        // Restore original text after a short delay (faster for more rapid glitching)
-        setTimeout(() => {
-            nameElement.textContent = originalText;
-        }, 780);
-    }
-    
-    // Function to create a sequence of glitches
-    function glitchSequence(count, interval) {
-        for (let i = 0; i < count; i++) {
-            setTimeout(applyGlitch, i * interval);
-        }
-    }
-    
-    // Start the random glitching
-    function startRandomGlitching() {
-        // Random delay between 1-5 seconds (reduced for more frequent glitches)
-        const delay = Math.random() * 4000 + 2500;
-        
-        setTimeout(() => {
-            // Random number of glitches in sequence (3-7)
-            const glitchCount = Math.floor(Math.random() * 5) + 3;
-            // Faster interval for more intense effect
-            glitchSequence(glitchCount, 220);
-            
-            // Continue glitching randomly
-            startRandomGlitching();
-        }, delay);
-    }
-    
-    /* Add hover effect
-    nameElement.addEventListener('mouseenter', () => {
-        // More intense glitch on hover - 7 rapid glitches
-        glitchSequence(7, 80);
-    });
-    
-    // Add click effect for mobile users
-    nameElement.addEventListener('click', () => {
-        // Super intense glitch on click - 10 very rapid glitches
-        glitchSequence(10, 60);
-    });*/
-    
-    // Start random glitching
-    startRandomGlitching();
-    
-    // Initial glitch effect when loaded
-    setTimeout(() => {
-        glitchSequence(5, 100);
-    }, 500);
-} 
+  initCollectionParallaxHover()
+  
+  // Testimonials already present in DOM (static)
+  
+  // Initialize stat cards
+  document.querySelectorAll(".stat-card").forEach((el) => {
+    el.style.opacity = "0"
+    el.style.transform = "translateY(30px) scale(0.9)"
+  })
+  
+  // Initialize about section
+  const aboutImage = document.querySelector(".about-image")
+  const aboutContent = document.querySelector(".about-content")
+  if (aboutImage) {
+    aboutImage.style.opacity = "0"
+    aboutImage.style.transform = "translateX(-50px)"
+  }
+  if (aboutContent) {
+    aboutContent.style.opacity = "0"
+    aboutContent.style.transform = "translateX(50px)"
+  }
+  
+  // Initialize CTA and Footer
+  const cta = document.querySelector(".cta")
+  const footer = document.querySelector(".footer")
+  if (cta) {
+    cta.style.opacity = "0"
+    cta.style.transform = "scale(0.95)"
+  }
+  if (footer) {
+    footer.style.opacity = "0"
+    footer.style.transform = "translateY(30px)"
+  }
+})
