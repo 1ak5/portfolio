@@ -175,11 +175,11 @@ img {
 
     0%,
     100% {
-        left: -20px;
+        transform: translateX(-20px);
     }
 
     50% {
-        left: 60px;
+        transform: translateX(60px);
     }
 }
 
@@ -204,7 +204,7 @@ img {
     font-weight: 600;
     font-size: 1.6rem;
     letter-spacing: 0.5px;
-    transition: all var(--transition-fast);
+    transition: transform var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
     border: none;
     cursor: pointer;
     position: relative;
@@ -225,7 +225,7 @@ img {
     background: rgb(168, 168, 168);
     color: white;
     box-shadow: var(--shadow-primary);
-    transition: all var(--transition-fast), transform var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .primary-btn:hover {
@@ -448,7 +448,7 @@ nav {
     display: flex;
     align-items: center;
     gap: 1rem;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .btn-indicator {
@@ -650,7 +650,7 @@ nav {
     border: 1px solid rgba(255, 255, 255, 0.08);
     color: rgba(255, 255, 255, 0.8);
     font-size: 2.2rem !important;
-    transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+    transition: transform 0.4s cubic-bezier(0.215, 0.61, 0.355, 1), background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(5px);
@@ -725,7 +725,7 @@ nav {
     border: 1px solid rgba(192, 192, 192, 0.2);
     box-shadow: 0 0 20px rgba(192, 192, 192, 0.2);
     animation: bounce 2s infinite ease-in-out;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .scroll-indicator:hover {
@@ -1246,7 +1246,7 @@ img:hover {
     font-weight: 500;
     color: var(--text-light);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: color var(--transition-fast);
     position: relative;
 }
 
@@ -1291,7 +1291,8 @@ img:hover {
     border-radius: 15px;
     overflow: hidden;
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-normal);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal), opacity var(--transition-normal);
+    will-change: transform, opacity;
     opacity: 0;
     transform: translateY(30px);
     display: none;
@@ -1349,7 +1350,7 @@ img:hover {
     justify-content: center;
     align-items: center;
     opacity: 0;
-    transition: all var(--transition-normal);
+    transition: opacity var(--transition-normal);
     backdrop-filter: blur(4px);
 }
 
@@ -1374,7 +1375,7 @@ img:hover {
     font-size: 2rem;
     transform: translateY(20px);
     opacity: 0;
-    transition: all var(--transition-normal);
+    transition: transform var(--transition-normal), opacity var(--transition-normal), background-color var(--transition-normal), color var(--transition-normal);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -1940,7 +1941,7 @@ img:hover {
     box-shadow: var(--shadow-md);
     text-align: center;
     position: relative;
-    transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     transform-origin: center;
     will-change: transform, opacity;
     backface-visibility: hidden;
@@ -1950,7 +1951,7 @@ img:hover {
 .testimonials-container:hover .testimonial-card {
     transform: translateY(-5px);
     border-left: 3px solid var(--primary-color);
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), border-left-width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .dark-mode .testimonial-card {
@@ -2830,7 +2831,7 @@ a.contact-value:hover::after {
         width: 100%;
         text-align: center;
         border-radius: 10px;
-        transition: all 0.3s ease;
+        transition: transform 0.3s ease, background-color 0.3s ease;
     }
 
     .nav-link:hover,
@@ -2852,7 +2853,7 @@ a.contact-value:hover::after {
         color: var(--primary-color);
         font-size: 2rem;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
         z-index: 100;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     }
@@ -3494,7 +3495,7 @@ a.contact-value:hover::after {
     background-color: #242435 !important;
     font-size: 1rem;
     color: #fff;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
     font-family: 'Poppins', sans-serif;
 }
 
@@ -3510,7 +3511,7 @@ a.contact-value:hover::after {
     font-size: 1rem;
     color: #aaa;
     pointer-events: none;
-    transition: all 0.3s ease;
+    transition: top 0.3s ease, left 0.3s ease, font-size 0.3s ease, color 0.3s ease;
 }
 
 .form-group input:focus,
@@ -3563,7 +3564,7 @@ a.contact-value:hover::after {
     color: white;
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 10px 20px rgba(192, 192, 192, 0.2);
     overflow: hidden;
     position: relative;
@@ -3594,7 +3595,7 @@ a.contact-value:hover::after {
 
 /* FIXED: Footer social icons */
 .footer .social-link {
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3750,7 +3751,7 @@ spline-viewer a[class*="watermark"] {
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.9);
     text-shadow: 0 0 15px rgba(192, 192, 192, 0.5);
-    transition: all 0.3s ease;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .footer-logo .logo-text .highlight {
@@ -3779,7 +3780,7 @@ spline-viewer a[class*="watermark"] {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     margin-right: 0;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .footer .social-icon:hover {
@@ -3851,7 +3852,7 @@ spline-viewer a[class*="watermark"] {
     font-weight: 400;
     text-align: center;
     letter-spacing: 0.5px;
-    transition: all 0.3s ease;
+    transition: color 0.3s ease;
 }
 
 @media (max-width: 768px) {
@@ -8523,5 +8524,211 @@ body {
     .section-header {
         margin-bottom: 1rem !important;
         /* Reduced from 2rem or more */
+    }
+}
+
+/* Spline Loader - iOS Style */
+.spline-loader {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    z-index: -1;
+    /* Lower z-index as requested (assuming model is > 1) */
+    pointer-events: none;
+    transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+    padding-left: 45%;
+    /* Increased shift to right for laptops */
+}
+
+/* Mobile check */
+@media (max-width: 768px) {
+    .spline-loader {
+        padding-left: 0;
+    }
+}
+
+.spline-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* iOS Spinner Animation */
+.ios-spinner {
+    position: relative;
+    width: 54px;
+    height: 54px;
+    display: inline-block;
+}
+
+.ios-spinner .bar {
+    width: 6%;
+    height: 25%;
+    background: #808080;
+    /* Neutral grey base */
+    position: absolute;
+    left: 47%;
+    top: 37.5%;
+    opacity: 0;
+    border-radius: 5px;
+    /* Rounded tips */
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+    animation: fade 1s linear infinite;
+}
+
+/* Rotation for each bar */
+.ios-spinner .bar:nth-child(1) {
+    transform: rotate(0deg) translate(0, -140%);
+    animation-delay: -0.9167s;
+}
+
+.ios-spinner .bar:nth-child(2) {
+    transform: rotate(30deg) translate(0, -140%);
+    animation-delay: -0.8333s;
+}
+
+.ios-spinner .bar:nth-child(3) {
+    transform: rotate(60deg) translate(0, -140%);
+    animation-delay: -0.75s;
+}
+
+.ios-spinner .bar:nth-child(4) {
+    transform: rotate(90deg) translate(0, -140%);
+    animation-delay: -0.6667s;
+}
+
+.ios-spinner .bar:nth-child(5) {
+    transform: rotate(120deg) translate(0, -140%);
+    animation-delay: -0.5833s;
+}
+
+.ios-spinner .bar:nth-child(6) {
+    transform: rotate(150deg) translate(0, -140%);
+    animation-delay: -0.5s;
+}
+
+.ios-spinner .bar:nth-child(7) {
+    transform: rotate(180deg) translate(0, -140%);
+    animation-delay: -0.4167s;
+}
+
+.ios-spinner .bar:nth-child(8) {
+    transform: rotate(210deg) translate(0, -140%);
+    animation-delay: -0.3333s;
+}
+
+.ios-spinner .bar:nth-child(9) {
+    transform: rotate(240deg) translate(0, -140%);
+    animation-delay: -0.25s;
+}
+
+.ios-spinner .bar:nth-child(10) {
+    transform: rotate(270deg) translate(0, -140%);
+    animation-delay: -0.1667s;
+}
+
+.ios-spinner .bar:nth-child(11) {
+    transform: rotate(300deg) translate(0, -140%);
+    animation-delay: -0.0833s;
+}
+
+.ios-spinner .bar:nth-child(12) {
+    transform: rotate(330deg) translate(0, -140%);
+    animation-delay: 0s;
+}
+
+@keyframes fade {
+    from {
+        opacity: 1;
+        background: #ffffff;
+    }
+
+    /* Active color: White */
+    to {
+        opacity: 0.25;
+        background: #808080;
+    }
+
+    /* Inactive color: Grey */
+}
+
+/* Infinite Scroll Ticker */
+.ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    background-color: #000;
+    padding: 3rem 0;
+    /* More top/bottom padding */
+    margin-top: 2rem;
+    /* Extra top margin */
+    white-space: nowrap;
+    /* Removed border-bottom as requested */
+    position: relative;
+    z-index: 5;
+    /* Hardware acceleration for container */
+    transform: translate3d(0, 0, 0);
+    contain: content;
+    /* Isolate the ticker from the rest of the page */
+    pointer-events: none;
+    /* Prevent hover checks on container */
+}
+
+.ticker {
+    display: inline-block;
+    animation: tickerScroll 60s linear infinite;
+    /* Slower (60s) */
+    will-change: transform;
+    /* Ensure hardware acceleration */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    contain: layout style paint;
+    /* strict containment */
+    /* Optimize text rendering for moving text */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.ticker-item {
+    display: inline-block;
+    font-family: var(--heading-font);
+    font-size: 16px;
+    /* Slightly larger */
+    color: #666;
+    /* Slightly darker for premium feel */
+    margin-right: 7rem;
+    /* Reduced gap as requested */
+    text-transform: uppercase;
+
+    font-weight: 800;
+    /* BOLD */
+    opacity: 0.7;
+    transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.ticker-item i {
+    margin-right: 10px;
+    font-size: 1.4rem;
+    vertical-align: middle;
+}
+
+/* Hover effect removed - animation continues always */
+.ticker-item:hover {
+    color: #fff;
+    opacity: 1;
+}
+
+@keyframes tickerScroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(-50%, 0, 0);
     }
 }

@@ -141,8 +141,25 @@
         </div>
         <div class="hero-3d-container" id="hero-3d-space"
             style="width:100%;max-width:900px;margin:2rem auto 0 auto;min-height:350px;overflow:hidden;position:relative;">
+            <!-- Spline Loader -->
+            <div class="spline-loader" id="spline-loader">
+                <div class="ios-spinner">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+            </div>
             <spline-viewer url="https://prod.spline.design/pJmBesvLzyiLfOWa/scene.splinecode"
-                style="width:100%; height:100%; min-height:350px; display:block;" loading="eager" preload="true">
+                style="width:100%; height:100%; min-height:350px; display:block;" loading="lazy">
             </spline-viewer>
         </div>
         <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.98/build/spline-viewer.js"></script>
@@ -156,6 +173,45 @@
         </a>
     </section>
 
+    <!-- Infinite Scroll Ticker -->
+    <div class="ticker-wrap">
+        <div class="ticker">
+            <span class="ticker-item"><i class="far fa-circle"></i> Full Stack Developer</span>
+            <span class="ticker-item"><i class="fas fa-tint"></i> UI UX designer</span>
+            <span class="ticker-item"><i class="fas fa-asterisk"></i> Strong Backend</span>
+            <span class="ticker-item"><i class="fas fa-infinity"></i> App Developer </span>
+            <span class="ticker-item"><i class="far fa-circle"></i> Experienced</span>
+            <span class="ticker-item"><i class="fas fa-tint"></i> Freelancer</span>
+            <span class="ticker-item"><i class="fas fa-bolt"></i> SEO Optimization</span>
+            <span class="ticker-item"><i class="fas fa-infinity"></i> Expert</span>
+            <!-- Duplicates for seamless loop -->
+            <span class="ticker-item"><i class="far fa-circle"></i> Full Stack Developer</span>
+            <span class="ticker-item"><i class="fas fa-tint"></i> UI UX designer</span>
+            <span class="ticker-item"><i class="fas fa-asterisk"></i> Strong Backend</span>
+            <span class="ticker-item"><i class="fas fa-infinity"></i> App Developer </span>
+            <span class="ticker-item"><i class="far fa-circle"></i> Experienced</span>
+            <span class="ticker-item"><i class="fas fa-tint"></i> Freelancer</span>
+            <span class="ticker-item"><i class="fas fa-asterisk"></i> SEO Optimization</span>
+            <span class="ticker-item"><i class="fas fa-infinity"></i> Expert</span>
+            <span class="ticker-item"><i class="far fa-circle"></i> Full Stack Developer</span>
+            <span class="ticker-item"><i class="fas fa-tint"></i> UI UX designer</span>
+            <span class="ticker-item"><i class="fas fa-asterisk"></i> Strong Backend</span>
+            <span class="ticker-item"><i class="fas fa-infinity"></i> App Developer </span>
+            <span class="ticker-item"><i class="far fa-circle"></i> Experienced</span>
+            <span class="ticker-item"><i class="fas fa-tint"></i> Freelancer</span>
+            <span class="ticker-item"><i class="fas fa-asterisk"></i> SEO Optimization</span>
+            <span class="ticker-item"><i class="fas fa-infinity"></i> Expert</span>
+            <span class="ticker-item"><i class="far fa-circle"></i> Full Stack Developer</span>
+            <span class="ticker-item"><i class="fas fa-tint"></i> UI UX designer</span>
+            <span class="ticker-item"><i class="fas fa-asterisk"></i> Strong Backend</span>
+            <span class="ticker-item"><i class="fas fa-infinity"></i> App Developer </span>
+            <span class="ticker-item"><i class="far fa-circle"></i> Experienced</span>
+            <span class="ticker-item"><i class="fas fa-tint"></i> Freelancer</span>
+            <span class="ticker-item"><i class="fas fa-asterisk"></i> SEO Optimization</span>
+            <span class="ticker-item"><i class="fas fa-infinity"></i> Expert</span>
+        </div>
+    </div>
+
     <!-- About Section -->
     <section id="about" class="about-section">
         <div class="section-header">
@@ -168,7 +224,7 @@
                     field and i worked with many clients, local businesses & startups helped them in creating a stunning
                     landing pages ,portfolios ,business website and more... . </p>
                 <p style="font-family: 'Comfortaa', cursive;">Currently , I'm pursuing computer science (BTech) from
-                    LNCT Bhopal (MP); and Data Science & Application (BS) from IIT Madras.</p>
+                    LNCT Bhopal (MP); and Online Data Science & Application (BS) from IIT Madras.</p>
                 <div class="stats-container">
                     <div class="stat-item">
                         <span class="stat-number" data-target="3">0</span>
@@ -187,7 +243,7 @@
             </div>
             <div class="about-image">
 
-                <img src="img6.png" alt="Profile Image">
+                <img src="img6.png" alt="Profile Image" loading="lazy">
 
 
             </div>
@@ -433,7 +489,7 @@
             <!-- NEW PROJECT 1 - Fill your details -->
             <div class="project-card" data-category="web">
                 <div class="project-img">
-                    <img src="imgp1.png" class="image">
+                    <img src="imgp1.png" class="image" loading="lazy">
                     <div class="project-overlay">
                         <div class="project-links">
                             <a href="https://cloudrifydigital.com" class="project-link" target="_blank"><i
@@ -461,7 +517,7 @@
             <!-- NEW PROJECT 2 - Fill your details -->
             <div class="project-card" data-category="web">
                 <div class="project-img">
-                    <img src="imgp2.png" class="image">
+                    <img src="imgp2.png" class="image" loading="lazy">
                     <div class="project-overlay">
                         <div class="project-links">
                             <a href="https://heartcoffee.vercel.app" class="project-link" target="_blank"><i
@@ -485,7 +541,7 @@
             <div class="project-card" data-category="ui">
                 <div class="project-img">
 
-                    <img src=img2.png class="image">
+                    <img src=img2.png class="image" loading="lazy">
                     <div class="project-overlay">
                         <div class="project-links">
                             <a href="https://enotesdb.onrender.com" class="project-link" target="main"><i
@@ -513,7 +569,7 @@
 
             <div class="project-card" data-category="web">
                 <div class="project-img">
-                    <img src="project1.png" class="image">
+                    <img src="project1.png" class="image" loading="lazy">
                     <div class="project-overlay">
                         <div class="project-links">
                             <a href="https://darvy.vercel.app/" class="project-link" target="main"><i
@@ -540,7 +596,7 @@
 
             <div class="project-card" data-category="web">
                 <div class="project-img">
-                    <img src="imgp3.png" class="image">
+                    <img src="imgp3.png" class="image" loading="lazy">
                     <div class="project-overlay">
                         <div class="project-links">
                             <a href="https://laikondeli.vercel.app" class="project-link" target="_blank"><i
@@ -575,7 +631,7 @@
             <div class="project-card" data-category="ui">
                 <div class="project-img">
 
-                    <img src=img4.png class="image">
+                    <img src=img4.png class="image" loading="lazy">
                     <div class="project-overlay">
                         <div class="project-links">
                             <a href="https://chat-room-e1z6-azw2.onrender.com" class="project-link" target="main"><i
@@ -713,7 +769,7 @@
                     <p class="card-text">Aditya built me a perfect portfolio website for me to apply for jobs to
                         recruiters</p>
                     <div class="card-author">
-                        <img src="client.webp" alt="Author">
+                        <img src="client.webp" alt="Author" loading="lazy">
                         <div class="author-info">
                             <h4>Aryan Khunt</h4>
                             <p>Data Analyst at USA</p>
@@ -725,7 +781,7 @@
                     <p class="card-text">He helped me building a stunning landing page for my business in the due time
                     </p>
                     <div class="card-author">
-                        <img src="client.webp" alt="Author">
+                        <img src="client.webp" alt="Author" loading="lazy">
                         <div class="author-info">
                             <h4>Jainil </h4>
                             <p>Local businessman</p>
@@ -737,7 +793,7 @@
                     <p class="card-text">Aditya has built a very professional yet good looking landing page for my
                         crypto trading agency. </p>
                     <div class="card-author">
-                        <img src="client.webp" alt="Author">
+                        <img src="client.webp" alt="Author" loading="lazy">
                         <div class="author-info">
                             <h4>Sachin Devakar</h4>
                             <p>manager in a Crypto trading Agency </p>
@@ -748,7 +804,7 @@
                     <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
                     <p class="card-text">Adii really worked very well for my agency, i'm super impressed by him.</p>
                     <div class="card-author">
-                        <img src="client.webp" alt="Author">
+                        <img src="client.webp" alt="Author" loading="lazy">
                         <div class="author-info">
                             <h4>Rushikesh Paamu</h4>
                             <p>Running a Succesfull Agency in Australia</p>
@@ -762,7 +818,7 @@
                     <p class="card-text">Aditya built me a perfect portfolio website for me to apply for jobs to
                         recruiters</p>
                     <div class="card-author">
-                        <img src="client.webp" alt="Author">
+                        <img src="client.webp" alt="Author" loading="lazy">
                         <div class="author-info">
                             <h4>Aryan Khunt</h4>
                             <p>Data Analyst at USA</p>
@@ -774,7 +830,7 @@
                     <p class="card-text">He helped me building a stunning landing page for my business in the due time
                     </p>
                     <div class="card-author">
-                        <img src="client.webp" alt="Author">
+                        <img src="client.webp" alt="Author" loading="lazy">
                         <div class="author-info">
                             <h4>Jainil </h4>
                             <p>Local businessman</p>
@@ -786,7 +842,7 @@
                     <p class="card-text">Aditya has built a very professional yet good looking landing page for my
                         crypto trading agency. </p>
                     <div class="card-author">
-                        <img src="client.webp" alt="Author">
+                        <img src="client.webp" alt="Author" loading="lazy">
                         <div class="author-info">
                             <h4>Sachin Devakar</h4>
                             <p>manager in a Crypto trading Agency </p>
@@ -797,7 +853,7 @@
                     <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
                     <p class="card-text">Adii really worked very well for my agency, i'm super impressed by him.</p>
                     <div class="card-author">
-                        <img src="client.webp" alt="Author">
+                        <img src="client.webp" alt="Author" loading="lazy">
                         <div class="author-info">
                             <h4>Rushikesh Paamu</h4>
                             <p>Running a Succesfull Agency in Australia</p>

@@ -186,33 +186,56 @@ const checkTheme = () => {
     document.body.classList.add('dark-mode');
 };
 
-const handleScroll = () => {
-    const scrollPos = window.scrollY;
+// Scroll handling replaced by IntersectionObserver
+const initScrollObserver = () => {
+    // 1. Navigation Background on Scroll
+    const nav = document.querySelector('nav');
+    const heroSection = document.querySelector('.hero-section') || document.body;
 
-    if (scrollPos > 50) {
-        nav.classList.add('scrolled');
-    } else {
-        nav.classList.remove('scrolled');
-    }
+    // Create a sentinel for the top of the page to toggle nav class
+    const topSentinel = document.createElement('div');
+    topSentinel.style.position = 'absolute';
+    topSentinel.style.top = '0';
+    topSentinel.style.height = '50px';
+    topSentinel.style.width = '100%';
+    topSentinel.style.pointerEvents = 'none';
+    topSentinel.style.visibility = 'hidden';
+    document.body.prepend(topSentinel);
 
-    // Highlight active nav link based on scroll position
-    const sections = document.querySelectorAll('section');
+    const navObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+    }, { rootMargin: '0px', threshold: 0 });
 
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop - 100;
-        const sectionHeight = section.offsetHeight;
-        const sectionId = section.getAttribute('id');
+    navObserver.observe(topSentinel);
 
-        if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-            allNavLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${sectionId}`) {
-                    link.classList.add('active');
-                }
-            });
-        }
-    });
+    // 2. Active Section Highlighting
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    const sectionObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute('id');
+                // Remove active from all
+                navLinks.forEach(link => link.classList.remove('active'));
+                // Add to current
+                const activeLink = document.querySelector(`.nav-link[href="#${id}"]`);
+                if (activeLink) activeLink.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 }); // Trigger when section is in middle of viewport
+
+    sections.forEach(section => sectionObserver.observe(section));
 };
+
+// Initialize observers on load
+document.addEventListener('DOMContentLoaded', initScrollObserver);
 
 // ==================== Projects Filter (Handled Globally at top) ====================
 
@@ -811,7 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Theme toggle event listener removed
-    window.addEventListener('scroll', handleScroll);
+    // window.addEventListener('scroll', handleScroll); // Removed for performance
 
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1035,12 +1058,13 @@ function initGlitchEffect() {
 
 
 // Enhanced Realistic Smoke Cursor Effect (Fast Pure Smoke - No Dots - Zero Delay)
+// Enhanced Realistic Smoke Cursor Effect (Optimized with Pre-rendering)
 (function () {
     if (window.matchMedia('(max-width: 767px)').matches) return;
 
     const canvas = document.getElementById('cursor-canvas');
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true }); // Optimize context
 
     let mouseX = -100;
     let mouseY = -100;
@@ -1048,27 +1072,44 @@ function initGlitchEffect() {
     let lastY = -100;
     let particles = [];
 
+    // Pre-render the gradient particle
+    const particleCanvas = document.createElement('canvas');
+    const particleCtx = particleCanvas.getContext('2d');
+    const particleSize = 64; // Power of 2
+    particleCanvas.width = particleSize;
+    particleCanvas.height = particleSize;
+
+    const gradient = particleCtx.createRadialGradient(particleSize / 2, particleSize / 2, 0, particleSize / 2, particleSize / 2, particleSize / 2);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.4)');
+    gradient.addColorStop(0.6, 'rgba(180, 180, 180, 0.1)');
+    gradient.addColorStop(1, 'rgba(150, 150, 150, 0)');
+
+    particleCtx.fillStyle = gradient;
+    particleCtx.beginPath();
+    particleCtx.ellipse(particleSize / 2, particleSize / 2, particleSize / 2, particleSize / 2 * 0.8, 0, 0, Math.PI * 2);
+    particleCtx.fill();
+
     function resize() {
+        // Optimize canvas size handling
+        const dpr = window.devicePixelRatio || 1;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        // Don't scale context to simple pixel rendering for smoke
     }
     window.addEventListener('resize', resize, { passive: true });
     resize();
 
     class Particle {
         constructor(x, y, vx, vy) {
-            // Very small initial scatter for precision
             this.x = x + (Math.random() - 0.5) * 5;
             this.y = y + (Math.random() - 0.5) * 5;
-
             this.size = Math.random() * 15 + 8;
-            // Inherit some velocity from mouse movement for natural flow
             this.speedX = vx * 0.2 + (Math.random() - 0.5) * 0.8;
             this.speedY = vy * 0.2 + (Math.random() - 0.5) * 0.8;
-
             this.opacity = Math.random() * 0.12 + 0.05;
             this.life = 1.0;
-            this.decay = Math.random() * 0.06 + 0.05; // Slightly faster decay
+            this.decay = Math.random() * 0.06 + 0.05;
             this.growth = Math.random() * 0.5 + 0.3;
             this.rotation = Math.random() * Math.PI * 2;
             this.rotationSpeed = (Math.random() - 0.5) * 0.02;
@@ -1084,37 +1125,30 @@ function initGlitchEffect() {
 
         draw() {
             if (this.life <= 0) return;
-
             ctx.save();
             ctx.translate(this.x, this.y);
+            // Rotation is less visible on round nebulas, skip for perf if needed, but keeping for fidelity
             ctx.rotate(this.rotation);
             ctx.globalAlpha = this.life * this.opacity;
-
-            // HOLLOW radial gradient: transparent in very center to remove dots
-            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
-            gradient.addColorStop(0, 'rgba(255, 255, 255, 0)'); // Center: Transparent
-            gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.4)'); // Inner ring: Soft Peak
-            gradient.addColorStop(0.6, 'rgba(180, 180, 180, 0.1)'); // Outer: Fading
-            gradient.addColorStop(1, 'rgba(150, 150, 150, 0)'); // Edge: Transparent
-
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.ellipse(0, 0, this.size, this.size * 0.8, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // Draw pre-rendered image instead of creating gradient
+            ctx.drawImage(particleCanvas, -this.size, -this.size * 0.8, this.size * 2, this.size * 1.6);
             ctx.restore();
         }
     }
 
-    // High-frequency mouse tracking
+    // Rate limit mouse events
+    let lastEventTime = 0;
     document.addEventListener('mousemove', (e) => {
+        const now = Date.now();
+        if (now - lastEventTime < 16) return; // Cap at ~60fps input
+
         mouseX = e.clientX;
         mouseY = e.clientY;
+        lastEventTime = now;
 
-        // Immediate injection for ultra-responsiveness
         const vx = mouseX - lastX;
         const vy = mouseY - lastY;
 
-        // Add particles on every move event
         for (let i = 0; i < 2; i++) {
             particles.push(new Particle(mouseX, mouseY, vx, vy));
         }
@@ -1125,26 +1159,27 @@ function initGlitchEffect() {
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         ctx.globalCompositeOperation = 'screen';
 
-        // Additional particles in flow if mouse is moving
-        if (Math.abs(mouseX - lastX) > 0.1 || Math.abs(mouseY - lastY) > 0.1) {
-            for (let i = 0; i < 1; i++) {
-                particles.push(new Particle(mouseX, mouseY, 0, 0));
-            }
+        // Add particles if moving - check if moved significantly
+        if (Math.abs(mouseX - lastX) > 0.5 || Math.abs(mouseY - lastY) > 0.5) {
+            // Only add trails if moving enough
+        } else {
+            // Maybe add fewer idle particles
         }
 
-        for (let i = 0; i < particles.length; i++) {
-            particles[i].update();
-            particles[i].draw();
+        // Optimization: Batch drawing if possible (difficult with varying transforms)
+        // Manual loop implies batching logic per particle
 
-            if (particles[i].life <= 0) {
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.update();
+            p.draw();
+            if (p.life <= 0) {
                 particles.splice(i, 1);
                 i--;
             }
         }
-
         requestAnimationFrame(animate);
     }
     animate();
@@ -1235,176 +1270,9 @@ document.addEventListener('DOMContentLoaded', function () {
 // --- Script Block ---
 
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Function to update active menu item based on current section
-    function updateActiveMenuItem() {
-        // Get all sections
-        const sections = document.querySelectorAll('section[id]');
-        const scrollPosition = window.scrollY + 100; // Offset for better highlighting
+// window.addEventListener('scroll', updateActiveMenuItem); // Removed for performance
 
-        // Find the current section and update menu
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            const sectionId = section.getAttribute('id');
-
-            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-                // Remove active class from all links
-                document.querySelectorAll('.nav-link').forEach(link => {
-                    link.classList.remove('active');
-                });
-
-                // Add active class to current section link
-                const activeLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
-                if (activeLink) {
-                    activeLink.classList.add('active');
-                }
-            }
-        });
-    }
-
-    // Update active menu item on page load and scroll
-    window.addEventListener('load', updateActiveMenuItem);
-    window.addEventListener('scroll', updateActiveMenuItem);
-
-    // Mobile menu enhancements
-    const navToggle = document.querySelector('.nav-toggle');
-    const navLinks = document.querySelector('.nav-links');
-    const navLinksItems = document.querySelectorAll('.nav-link');
-
-    // Create overlay for closing menu when clicking outside
-    const overlay = document.createElement('div');
-    overlay.className = 'menu-overlay';
-    document.body.appendChild(overlay);
-
-    // Style the overlay
-    overlay.style.cssText = `
-                position: fixed;
-                top: 65px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 999;
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 0.3s ease;
-            `;
-
-    // Toggle mobile menu with direct class manipulation
-    if (navToggle) {
-        navToggle.addEventListener('click', function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            // Direct class manipulation
-            if (navLinks.classList.contains('active')) {
-                navLinks.classList.remove('active');
-                overlay.classList.remove('active');
-                document.body.classList.remove('menu-open');
-                navToggle.classList.remove('active'); // Remove active class from toggle button
-
-                // Reset icon to bars with animation
-                const icon = navToggle.querySelector('i');
-                if (icon) {
-                    icon.style.transform = 'rotate(0deg)';
-                    setTimeout(() => {
-                        icon.classList.remove('fa-times');
-                        icon.classList.add('fa-bars');
-                    }, 150);
-                }
-
-                // Hide overlay
-                overlay.style.opacity = '0';
-                overlay.style.visibility = 'hidden';
-            } else {
-                navLinks.classList.add('active');
-                overlay.classList.add('active');
-                document.body.classList.add('menu-open');
-                navToggle.classList.add('active'); // Add active class to toggle button
-
-                // Change icon to times (X) with animation
-                const icon = navToggle.querySelector('i');
-                if (icon) {
-                    icon.style.transform = 'rotate(90deg)';
-                    setTimeout(() => {
-                        icon.classList.remove('fa-bars');
-                        icon.classList.add('fa-times');
-                        icon.style.transform = 'rotate(0deg)';
-                    }, 150);
-                }
-
-                // Show overlay
-                overlay.style.opacity = '1';
-                overlay.style.visibility = 'visible';
-            }
-        });
-    }
-
-    // Close menu when clicking on a link
-    navLinksItems.forEach(link => {
-        link.addEventListener('click', function () {
-            navLinks.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.classList.remove('menu-open');
-            navToggle.classList.remove('active'); // Remove active class from toggle button
-
-            // Reset icon to bars
-            const icon = navToggle.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-
-            // Hide overlay
-            overlay.style.opacity = '0';
-            overlay.style.visibility = 'hidden';
-        });
-    });
-
-    // Close menu when clicking on overlay
-    overlay.addEventListener('click', function () {
-        navLinks.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.classList.remove('menu-open');
-        navToggle.classList.remove('active'); // Remove active class from toggle button
-
-        // Reset icon to bars
-        const icon = navToggle.querySelector('i');
-        if (icon) {
-            icon.style.transform = 'rotate(0deg)';
-            setTimeout(() => {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }, 150);
-        }
-
-        // Hide overlay
-        overlay.style.opacity = '0';
-        overlay.style.visibility = 'hidden';
-    });
-
-    // Close menu when window is resized to desktop size
-    window.addEventListener('resize', function () {
-        if (window.innerWidth > 767) {
-            navLinks.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.classList.remove('menu-open');
-            navToggle.classList.remove('active'); // Remove active class from toggle button
-
-            // Reset icon to bars
-            const icon = navToggle.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-
-            // Hide overlay
-            overlay.style.opacity = '0';
-            overlay.style.visibility = 'hidden';
-        }
-    });
-});
+// Mobile menu enhancements block removed (redundant and causing scope errors)
 
 
 
@@ -1419,37 +1287,7 @@ document.getElementById('current-year').textContent = new Date().getFullYear();
 // --- Script Block ---
 
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Function to highlight active menu item based on scroll position
-    function highlightActiveSection() {
-        const sections = document.querySelectorAll('section[id]');
-        const navLinks = document.querySelectorAll('.nav-link');
-        const scrollPosition = window.scrollY + 100; // Offset for better detection
-
-        // Check each section's position
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            const sectionId = section.getAttribute('id');
-
-            // If the current scroll position is within this section
-            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-                // Remove active class from all links
-                navLinks.forEach(link => link.classList.remove('active'));
-
-                // Add active class to the matching link
-                const activeLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
-                if (activeLink) {
-                    activeLink.classList.add('active');
-                }
-            }
-        });
-    }
-
-    // Run on load and scroll
-    window.addEventListener('load', highlightActiveSection);
-    window.addEventListener('scroll', highlightActiveSection);
-});
+// window.addEventListener('scroll', highlightActiveSection); // Removed for performance
 
 
 
@@ -2319,3 +2157,25 @@ document.getElementById('current-year').textContent = new Date().getFullYear();
     });
 })();
 
+
+// Spline Loader Logic
+document.addEventListener('DOMContentLoaded', function () {
+    const splineViewer = document.querySelector('spline-viewer');
+    const loader = document.getElementById('spline-loader');
+
+    if (splineViewer && loader) {
+        // Function to hide loader
+        const hideLoader = () => {
+            loader.classList.add('hidden');
+            setTimeout(() => {
+                loader.style.display = 'none';
+            }, 200); // Short timeout just for fade effect
+        };
+
+        // Listen for load event
+        splineViewer.addEventListener('load', hideLoader);
+
+        // Fallback timeout - force hide after 1.5s as requested
+        setTimeout(hideLoader, 1500);
+    }
+});
