@@ -2180,22 +2180,94 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// ==================== Experience Section Accordion ====================
+// ==================== Experience Stats Count-up ====================
 document.addEventListener('DOMContentLoaded', () => {
-    const panels = document.querySelectorAll('.experience-item');
+    const stats = document.querySelectorAll('.exp-hud-stats .stat-num');
 
-    if (panels.length > 0) {
-        panels.forEach(panel => {
-            panel.addEventListener('click', () => {
-                removeActiveClasses();
-                panel.classList.add('active');
-            });
+    const countUp = (element) => {
+        const target = parseInt(element.innerText.replace('+', ''));
+        let current = 0;
+        const increment = target / 50; // Adjust for speed
+
+        const updateCount = () => {
+            if (current < target) {
+                current += increment;
+                element.innerText = Math.ceil(current) + '+';
+                setTimeout(updateCount, 20);
+            } else {
+                element.innerText = target + '+';
+            }
+        };
+
+        updateCount();
+    };
+
+    const observerOptions = {
+        threshold: 0.5
+    };
+
+    const statsObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                countUp(entry.target);
+                observer.unobserve(entry.target);
+            }
         });
+    }, observerOptions);
 
-        function removeActiveClasses() {
-            panels.forEach(panel => {
-                panel.classList.remove('active');
-            });
-        }
+    stats.forEach(stat => statsObserver.observe(stat));
+});
+
+// ==================== EmailJS Integration ====================
+// Note: Replace "YOUR_PUBLIC_KEY" with your actual public key in the .env or directly here for static site
+(function () {
+    // Check if emailjs is loaded
+    if (typeof emailjs !== 'undefined') {
+        const PUBLIC_KEY = "YOUR_PUBLIC_KEY"; // Placeholder
+        emailjs.init(PUBLIC_KEY);
+    }
+})();
+
+document.addEventListener('DOMContentLoaded', () => {
+    const contactForm = document.querySelector('.contact-form');
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Changes button text to show sending status
+            const submitBtn = this.querySelector('.send-brief-btn');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span>Sending...</span>';
+            submitBtn.disabled = true;
+
+            // EmailJS credentials (User needs to replace these)
+            const serviceID = 'YOUR_SERVICE_ID';
+            const templateID = 'YOUR_TEMPLATE_ID';
+
+            emailjs.sendForm(serviceID, templateID, this)
+                .then(() => {
+                    submitBtn.innerHTML = '<span>Sent Successfully!</span>';
+                    submitBtn.style.backgroundColor = '#4CAF50';
+                    this.reset();
+
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
+                        submitBtn.style.backgroundColor = '';
+                    }, 5000);
+                }, (err) => {
+                    alert('Failed to send message. Please try again later.');
+                    console.error('EmailJS Error:', err);
+                    submitBtn.innerHTML = '<span>Error! Try Again</span>';
+                    submitBtn.style.backgroundColor = '#f44336';
+                    submitBtn.disabled = false;
+
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.style.backgroundColor = '';
+                    }, 5000);
+                });
+        });
     }
 });

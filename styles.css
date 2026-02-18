@@ -532,12 +532,13 @@ nav {
         height: auto !important;
         line-height: 0 !important;
         font-size: 2rem !important;
-    
+
         /* Aggressive nudge for visual centering */
     }
 
     .nav-toggle {
         grid-column: 3 / 4 !important;
+
         /* Force toggle to the right-most available space in grid */
         justify-self: end !important;
         display: flex !important;
@@ -8758,441 +8759,317 @@ body {
     }
 }
 
-/* ================ EXPERIENCE SECTION ================ */
-.experience-section {
-    padding: var(--section-spacing) 0;
+/* ================ HORIZONTAL DIGITAL STREAM ================ */
+.exp-premium-section {
+    padding: 100px 0;
+    background-color: var(--bg-color);
     position: relative;
     overflow: hidden;
-    background-color: var(--bg-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
-.experience-wrapper {
-    display: flex;
+.exp-premium-container {
     width: 95%;
     max-width: 1400px;
-    height: 650px;
-    /* Slight height increase for better spacing */
     margin: 0 auto;
-    gap: 0;
-    /* Seamless - no gaps */
-    align-items: stretch;
+    position: relative;
+}
+
+/* --- HUD Stats Bar (Static) --- */
+.exp-hud-stats {
+    display: flex;
     justify-content: center;
+    gap: 40px;
+    margin-bottom: 60px;
+}
+
+.hud-pill {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    /* Container Border */
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 15px;
-    /* Compact Styling */
-    overflow: hidden;
-    /* Clips children to rounded corners */
-}
-
-/* Individual Experience Item Wrapper */
-.experience-item {
-    position: relative;
-    height: 100%;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    transition: flex 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-    overflow: hidden;
-    cursor: pointer;
-
-    /* Layout: Row (Handle + Content) */
-    display: flex;
-    flex-direction: row;
-
-    /* Default Inactive State */
-    flex: 0 0 80px;
-    background: #050505;
-}
-
-/* Last item shouldn't have right border */
-.experience-item:last-child {
-    border-right: none;
-}
-
-/* Active State */
-.experience-item.active {
-    flex: 1;
-    /* Expand */
-    cursor: default;
-    background: #000;
-}
-
-/* ================ HANDLES (Vertical Tabs) ================ */
-.exp-handle {
-    flex: 0 0 80px;
-    /* Fixed width, always takes space */
-    height: 100%;
+    padding: 15px 35px;
+    border-radius: 100px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    z-index: 10;
-    background: #080808;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    transition: background 0.3s ease;
+    gap: 20px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-.exp-icon {
-    display: none;
-    /* Hide icon on desktop vertical handles */
+.hud-pill i {
+    font-size: 2rem;
+    color: var(--primary-color);
 }
 
-.experience-item:hover .exp-handle {
-    background: #111;
-}
-
-/* Active Handle Style */
-.experience-item.active .exp-handle {
-    background: var(--primary-color);
-    /* Highlight active handle */
-}
-
-.handle-text {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    transform: rotate(180deg);
-    white-space: nowrap;
-
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.8rem;
-    font-weight: 600;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: #666;
-    transition: color 0.3s ease;
-}
-
-.experience-item:hover .handle-text {
-    color: #fff;
-}
-
-.experience-item.active .handle-text {
-    color: #000;
-    /* Dark text on bright active handle */
+.hud-info .stat-num {
+    font-size: 2.6rem;
     font-weight: 800;
+    color: #fff;
+    line-height: 1;
+    display: block;
 }
 
-
-/* ================ CONTENT (The Card) ================ */
-.exp-content {
-    flex: 1;
-    /* Take remaining width */
-    height: 100%;
-    opacity: 0;
-    min-width: 0;
-    /* Important for flex child */
-    pointer-events: none;
-    transition: opacity 0.5s ease 0.2s, transform 0.5s ease 0.2s;
-    background: #000;
-    display: flex;
-    flex-direction: column;
-    transform: translateX(20px);
+.hud-info .stat-label {
+    font-size: 1rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
 }
 
-/* Show Content when Active */
-.experience-item.active .exp-content {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(0);
+.hud-pill:hover {
+    transform: translateY(-5px);
+    border-color: rgba(var(--primary-rgb), 0.4);
 }
 
-
-/* Inner Layout - Professional Grid/Split */
-.exp-inner {
-    display: flex;
-    width: 100%;
-    height: 100%;
-}
-
-/* Image Side - Refined */
-.exp-image-wrapper {
-    flex: 0 0 45%;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.exp-image-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: grayscale(100%);
-    /* Professional B&W look initially */
-    transition: filter 0.6s ease, transform 0.6s ease;
-}
-
-.experience-item.active:hover .exp-image-wrapper img {
-    filter: grayscale(0%);
-    /* Reveal color on hover */
-    transform: scale(1.02);
-}
-
-/* Overlay for text readability on image if needed, or style choice */
-.exp-image-wrapper::after {
-    content: '';
+/* --- Horizontal Axis Beam (Static) --- */
+.digital-axis {
     position: absolute;
-    /* Full cover */
-    top: 0;
+    left: 5%;
+    right: 5%;
+    top: 380px;
+    /* Positioned below tags */
+    height: 2px;
+    background: linear-gradient(to right,
+            transparent,
+            rgba(var(--primary-rgb), 0.4) 15%,
+            rgba(var(--primary-rgb), 0.4) 85%,
+            transparent);
+    z-index: 1;
+}
+
+.axis-glow {
+    position: absolute;
     left: 0;
+    top: 50%;
+    transform: translateY(-50%);
     width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3);
+    height: 4px;
+    background: var(--primary-color);
+    filter: blur(8px);
+    opacity: 0.2;
 }
 
+/* Remove Pulsar */
+.axis-pulsar {
+    display: none;
+}
 
-/* Detail Side - Structured */
-.exp-details {
-    flex: 1;
-    padding: 60px 80px;
+/* --- Horizontal Experience Nodes --- */
+.exp-nodes-container {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 30px;
+    margin-top: 50px;
     position: relative;
-    background:
-        radial-gradient(circle at top right, rgba(255, 255, 255, 0.03) 0%, transparent 40%),
-        linear-gradient(to bottom, #000, #050505);
+    z-index: 2;
 }
 
-/* Tag/Label Styling */
-.exp-meta {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+.exp-node-item {
+    flex: 1;
+    position: relative;
+    padding-top: 60px;
+    /* Space for the tag above the beam */
+    text-align: center;
+}
+
+.node-indicator {
+    position: absolute;
+    top: 31px;
+    /* Align with horizontal beam (380px - container padding/offset) */
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Adjust top position based on container offset */
+.exp-horizontal-stream {
+    position: relative;
+    padding-top: 20px;
+}
+
+/* Fixed positioning for indicators on the beam */
+.exp-horizontal-stream .digital-axis {
+    top: 282px;
+}
+
+.node-dot {
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+    position: relative;
+    z-index: 3;
+}
+
+/* Remove Ring Rotation/Pulse */
+.node-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--primary-color);
+    border-radius: 50%;
+    opacity: 0.5;
+}
+
+.node-content {
+    transition: transform 0.4s ease;
+}
+
+.node-tag {
+    display: inline-block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    background: rgba(var(--primary-rgb), 0.1);
+    border: 1px solid rgba(var(--primary-rgb), 0.2);
+    padding: 6px 18px;
+    border-radius: 50px;
+    margin-bottom: 50px;
+    /* Space above/below the beam indicator */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.node-content h4 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 40px;
+    /* Space below the beam indicator */
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+}
+
+.node-company {
+    font-size: 1.4rem;
+    color: #888;
+    font-weight: 600;
     margin-bottom: 25px;
 }
 
-.exp-date {
-    font-family: 'Space Grotesk', monospace;
-    color: var(--primary-color);
-    font-size: 1.4rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 6px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    /* Tech-y sharp radius */
-}
-
-/* Title Styling - Clean & Big */
-.exp-title {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 4.5rem;
-    line-height: 1.1;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 30px;
-    color: #fff;
-    letter-spacing: -1px;
-}
-
-/* Description - Readable & Structured */
-.exp-desc {
-    font-family: 'Space Grotesk', sans-serif;
-    /* Clean sans */
-    font-size: 1.6rem;
-    line-height: 1.8;
-    color: #aaa;
-    margin-bottom: 50px;
-    max-width: 600px;
-    border-left: 2px solid rgba(255, 255, 255, 0.1);
-    padding-left: 20px;
-}
-
-/* CTA Button - Minimalist */
-.exp-btn {
+.node-details {
+    list-style: none;
     padding: 0;
-    background: transparent;
-    color: #fff;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 600;
-    font-size: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    width: fit-content;
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    text-align: left;
+    display: inline-block;
+}
+
+.node-details li {
+    font-size: 1.3rem;
+    color: #bbb;
+    margin-bottom: 12px;
+    padding-left: 20px;
     position: relative;
+    line-height: 1.5;
 }
 
-.exp-btn::after {
-    content: '';
+.node-details li::before {
+    content: '•';
     position: absolute;
-    bottom: -5px;
     left: 0;
-    width: 0%;
-    height: 1px;
-    background: #fff;
-    transition: width 0.3s ease;
+    color: var(--primary-color);
+    font-weight: 900;
 }
 
-.exp-btn:hover::after {
-    width: 100%;
+/* --- Static Aura (Hover Only) --- */
+.node-aura {
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(var(--primary-rgb), 0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
 
-.exp-btn i {
-    font-size: 1.2rem;
-    transition: transform 0.3s ease;
+.exp-node-item:hover .node-aura {
+    opacity: 1;
 }
 
-.exp-btn:hover i {
-    transform: translateX(5px);
+.exp-node-item:hover h4 {
+    color: var(--primary-color);
 }
 
-
-/* ================ RESPONSIVE ================ */
-@media (max-width: 1200px) {
-    .exp-title {
-        font-size: 3.5rem;
-    }
-
-    .exp-details {
-        padding: 40px;
-    }
-
-    .exp-image-wrapper {
-        flex: 0 0 40%;
-    }
-}
-
-@media (max-width: 900px) {
-    .experience-wrapper {
+/* --- Mobile Styling (Vertical Revert) --- */
+@media (max-width: 1024px) {
+    .exp-nodes-container {
         flex-direction: column;
+        gap: 60px;
+        padding-left: 60px;
+    }
+
+    .digital-axis {
+        left: 45px;
+        top: 150px;
+        bottom: 50px;
+        width: 2px;
         height: auto;
-        border: none;
-        background: transparent;
-        gap: 15px;
-        /* Gap between items on mobile */
-        overflow: visible;
-        /* Allow items to have their own shape */
-        padding: 0 10px;
+        background: linear-gradient(to bottom, transparent, rgba(var(--primary-rgb), 0.4), transparent);
     }
 
-    .experience-item {
-        flex: none;
-        /* Disable flex-grow/shrink logic from desktop */
-        width: 100%;
-        height: auto;
-        min-height: 60px;
-        /* Base height for header */
-        border-right: none;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        /* Visual requirement */
-        flex-direction: column;
-        /* Stack Handle on top of Content */
-        background: #050505;
-        transition: all 0.4s ease;
+    .axis-glow {
+        width: 4px;
+        height: 100%;
     }
 
-    /* Active Item Expansion */
-    .experience-item.active {
-        flex: none;
-        background: #000;
-        border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    .exp-node-item {
+        text-align: left;
+        padding-top: 0;
     }
 
-    /* Handle becomes a Header Bar */
-    .exp-handle {
-        width: 100%;
-        height: 60px;
-        flex: none;
-        /* Don't stretch */
-        border-right: none;
-        border-bottom: 1px solid transparent;
-        /* Default no border */
-        justify-content: space-between;
-        padding: 0 25px;
-        background: transparent;
-        /* Let item bg show, or set specific */
-    }
-
-    .experience-item.active .exp-handle {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        background: transparent;
-        /* Keep clean */
-    }
-
-    .handle-text {
-        writing-mode: horizontal-tb;
+    .node-indicator {
+        left: -42px;
+        top: 15px;
         transform: none;
-        font-size: 1.6rem;
-        letter-spacing: 2px;
-        color: #fff;
-        /* Always visible on mobile header */
     }
 
-    /* Icon Visibility */
-    .exp-icon {
-        display: block;
-        color: #fff;
+    .node-tag {
+        margin-bottom: 15px;
+    }
+
+    .node-content h4 {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .exp-hud-stats {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .hud-pill {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .digital-axis {
+        left: 30px;
+    }
+
+    .exp-nodes-container {
+        padding-left: 50px;
+    }
+
+    .node-indicator {
+        left: -30px;
+    }
+
+    .node-content h4 {
+        font-size: 1.8rem;
+    }
+
+    .node-company {
         font-size: 1.2rem;
-        transition: transform 0.3s ease;
-    }
-
-    .experience-item.active .exp-icon {
-        transform: rotate(180deg);
-    }
-
-    /* Content Layout */
-    .exp-content {
-        width: 100%;
-        opacity: 0;
-        height: 0;
-        overflow: hidden;
-        /* Hide when closed */
-        transform: none;
-        /* No sideways slide */
-        border-radius: 0 0 15px 15px;
-        display: none;
-        /* Remove from flow when inactive to fix spacing */
-    }
-
-    .experience-item.active .exp-content {
-        opacity: 1;
-        height: auto;
-        display: flex;
-        /* Animation is tricky with height:auto, usually max-height is used, 
-           but for simplicity with flex we use display or just rely on the open state */
-        animation: fadeInMobile 0.5s ease forwards;
-    }
-
-    @keyframes fadeInMobile {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-
-    /* Inner Content Stack */
-    .exp-inner {
-        flex-direction: column;
-    }
-
-    .exp-image-wrapper {
-        flex: none;
-        width: 100%;
-        height: 250px;
-        border-right: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .exp-details {
-        padding: 30px 25px;
-    }
-
-    .exp-title {
-        font-size: 2.5rem;
     }
 }
