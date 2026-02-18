@@ -3,7 +3,7 @@
 A unique, interactive, and modern portfolio website designed specifically for frontend developers. This portfolio showcases advanced frontend skills with impressive 3D effects and animations powered by Three.js and GSAP.
 
 ![Portfolio Preview](https://via.placeholder.com/800x400)
-
+ksajlabver; ksbuc ckn gk,gjnkvvlvlv hlvv ll  
 ## 🚀 Features
 
 - **Modern Design**: Clean and professional UI with attention to detail
