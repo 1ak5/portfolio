@@ -157,19 +157,7 @@ const startLoading = () => {
 
 
 // ==================== Navigation ====================
-const toggleMenu = () => {
-    navLinks.classList.toggle('active');
-    if (navLinks.classList.contains('active')) {
-        navToggle.innerHTML = '<i class="fas fa-times"></i>';
-    } else {
-        navToggle.innerHTML = '<i class="fas fa-bars"></i>';
-    }
-};
-
-const closeMenu = () => {
-    navLinks.classList.remove('active');
-    navToggle.innerHTML = '<i class="fas fa-bars"></i>';
-};
+// Old toggleMenu and closeMenu functions removed - using clean mobile menu handler in DOMContentLoaded
 
 // toggleTheme function is kept for backward compatibility but won't be used
 const toggleTheme = () => {
@@ -780,58 +768,154 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listeners
     // updateCursor listener removed
 
-    document.querySelectorAll('a, button, .nav-toggle, .theme-toggle, .project-card, .skill-card').forEach(element => {
+    document.querySelectorAll('a, button, .theme-toggle, .project-card, .skill-card').forEach(element => {
         element.addEventListener('mouseenter', expandCursor);
         element.addEventListener('mouseleave', shrinkCursor);
     });
+    
+    // Make sure nav-toggle is clickable
+    const navToggleBtn = document.querySelector('.nav-toggle');
+    if (navToggleBtn) {
+        navToggleBtn.style.cssText += `
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            z-index: 10000 !important;
+        `;
+    }
 
-    // ==================== Mobile Navigation ====================
-    // Improved mobile navigation with animation
-    navToggle.addEventListener('click', () => {
-        navLinks.classList.toggle('active');
-
-        // Change icon based on menu state
-        if (navLinks.classList.contains('active')) {
-            navToggle.innerHTML = '<i class="fas fa-times"></i>';
-            // Prevent body scrolling when menu is open
-            document.body.style.overflow = 'hidden';
-
-            // Animate links with staggered delay
-            allNavLinks.forEach((link, index) => {
-                link.style.opacity = '0';
-                link.style.transform = 'translateY(20px)';
-                setTimeout(() => {
-                    link.style.transition = 'all 0.3s ease';
-                    link.style.opacity = '1';
-                    link.style.transform = 'translateY(0)';
-                }, 100 + (index * 50));
-            });
-        } else {
-            navToggle.innerHTML = '<i class="fas fa-bars"></i>';
-            // Re-enable scrolling when menu is closed
-            document.body.style.overflow = 'auto';
-        }
-    });
-
-    // Close mobile menu when clicking on a link with smooth animation
-    allNavLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            navLinks.classList.remove('active');
-            navToggle.innerHTML = '<i class="fas fa-bars"></i>';
-            document.body.style.overflow = 'auto';
+    // ==================== Mobile Navigation - FOOLPROOF VERSION ====================
+    // This WILL work - using inline styles to override any CSS conflicts
+    const mobileMenuToggle = document.querySelector('.nav-toggle');
+    const mobileMenu = document.querySelector('.nav-links');
+    
+    if (mobileMenuToggle && mobileMenu) {
+        // Set initial styles for mobile menu (hidden by default)
+        mobileMenu.style.cssText = `
+            position: fixed !important;
+            top: 65px !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            max-height: 0 !important;
+            overflow: hidden !important;
+            background-color: rgba(10, 10, 15, 0.98) !important;
+            backdrop-filter: blur(15px) !important;
+            -webkit-backdrop-filter: blur(15px) !important;
+            z-index: 9999 !important;
+            transition: max-height 0.4s ease, padding 0.4s ease !important;
+            padding: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+        `;
+        
+        // Style menu links
+        const menuLinks = mobileMenu.querySelectorAll('.nav-link');
+        menuLinks.forEach(link => {
+            link.style.cssText = `
+                width: 100% !important;
+                padding: 1.2rem 2rem !important;
+                text-align: center !important;
+                color: #C0C0C0 !important;
+                font-size: 1.4rem !important;
+                text-decoration: none !important;
+                border-bottom: 1px solid rgba(192, 192, 192, 0.1) !important;
+                transition: background 0.3s ease !important;
+            `;
         });
-    });
-
-    // Close mobile menu when clicking outside
-    document.addEventListener('click', (e) => {
-        if (navLinks.classList.contains('active') &&
-            !navLinks.contains(e.target) &&
-            !navToggle.contains(e.target)) {
-            navLinks.classList.remove('active');
-            navToggle.innerHTML = '<i class="fas fa-bars"></i>';
-            document.body.style.overflow = 'auto';
-        }
-    });
+        
+        // Click handler for menu toggle button
+        mobileMenuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isActive = mobileMenu.classList.contains('active');
+            
+            if (isActive) {
+                // Close menu
+                mobileMenu.classList.remove('active');
+                mobileMenu.style.maxHeight = '0';
+                mobileMenu.style.padding = '0';
+                document.body.style.overflow = 'auto';
+                document.body.classList.remove('menu-open');
+                
+                // Change icon to bars
+                const icon = mobileMenuToggle.querySelector('i');
+                if (icon) {
+                    icon.className = 'fas fa-bars';
+                }
+            } else {
+                // Open menu
+                mobileMenu.classList.add('active');
+                mobileMenu.style.maxHeight = '100vh';
+                mobileMenu.style.padding = '2rem 0';
+                document.body.style.overflow = 'hidden';
+                document.body.classList.add('menu-open');
+                
+                // Change icon to times
+                const icon = mobileMenuToggle.querySelector('i');
+                if (icon) {
+                    icon.className = 'fas fa-times';
+                }
+            }
+        });
+        
+        // Close menu when clicking on links
+        menuLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenu.classList.remove('active');
+                mobileMenu.style.maxHeight = '0';
+                mobileMenu.style.padding = '0';
+                document.body.style.overflow = 'auto';
+                document.body.classList.remove('menu-open');
+                
+                const icon = mobileMenuToggle.querySelector('i');
+                if (icon) {
+                    icon.className = 'fas fa-bars';
+                }
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (mobileMenu.classList.contains('active') && 
+                !mobileMenu.contains(e.target) && 
+                !mobileMenuToggle.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+                mobileMenu.style.maxHeight = '0';
+                mobileMenu.style.padding = '0';
+                document.body.style.overflow = 'auto';
+                document.body.classList.remove('menu-open');
+                
+                const icon = mobileMenuToggle.querySelector('i');
+                if (icon) {
+                    icon.className = 'fas fa-bars';
+                }
+            }
+        });
+        
+        // Close menu on window resize to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 767 && mobileMenu.classList.contains('active')) {
+                mobileMenu.classList.remove('active');
+                mobileMenu.style.maxHeight = '0';
+                mobileMenu.style.padding = '0';
+                document.body.style.overflow = 'auto';
+                document.body.classList.remove('menu-open');
+                
+                const icon = mobileMenuToggle.querySelector('i');
+                if (icon) {
+                    icon.className = 'fas fa-bars';
+                }
+            }
+        });
+        
+        console.log('✅ Mobile menu handler setup complete!');
+    } else {
+        console.error('❌ Mobile menu elements not found!', { mobileMenuToggle, mobileMenu });
+    }
 
     // Theme toggle event listener removed
     // window.addEventListener('scroll', handleScroll); // Removed for performance
@@ -1367,99 +1451,7 @@ document.getElementById('current-year').textContent = new Date().getFullYear();
 // --- Script Block ---
 
 
-// Mobile menu toggle function
-function toggleMobileMenu(el) {
-    const navLinks = document.querySelector('.nav-links');
-    const icon = el.querySelector('i');
-
-    if (navLinks.classList.contains('active')) {
-        // Close menu
-        navLinks.classList.remove('active');
-        document.body.classList.remove('menu-open');
-        el.classList.remove('active');
-
-        // Change icon
-        icon.classList.remove('fa-times');
-        icon.classList.add('fa-bars');
-
-        // Remove overlay if it exists
-        const overlay = document.querySelector('.menu-overlay');
-        if (overlay) {
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                overlay.remove();
-            }, 300);
-        }
-    } else {
-        // Open menu
-        navLinks.classList.add('active');
-        document.body.classList.add('menu-open');
-        el.classList.add('active');
-
-        // Change icon
-        icon.classList.remove('fa-bars');
-        icon.classList.add('fa-times');
-
-        // Create overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'menu-overlay';
-        overlay.style.cssText = `
-                            position: fixed;
-                            top: 65px;
-                            left: 0;
-                            right: 0;
-                            bottom: 0;
-                            background: rgba(0, 0, 0, 0.5);
-                            backdrop-filter: blur(3px);
-                            -webkit-backdrop-filter: blur(3px);
-                            z-index: 999;
-                            opacity: 0;
-                            transition: opacity 0.3s ease;
-                        `;
-        document.body.appendChild(overlay);
-
-        // Add click event to close menu when overlay is clicked
-        overlay.addEventListener('click', function () {
-            toggleMobileMenu(el);
-        });
-
-        // Fade in overlay
-        setTimeout(() => {
-            overlay.style.opacity = '1';
-        }, 10);
-    }
-}
-
-// Close menu when clicking on links
-document.addEventListener('DOMContentLoaded', function () {
-    const navLinks = document.querySelectorAll('.nav-link');
-    const menuToggle = document.querySelector('.nav-toggle');
-    const navLinksContainer = document.querySelector('.nav-links');
-
-    navLinks.forEach(link => {
-        link.addEventListener('click', function () {
-            navLinksContainer.classList.remove('active');
-            document.body.classList.remove('menu-open');
-            menuToggle.classList.remove('active');
-
-            // Reset icon
-            const icon = menuToggle.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-
-            // Remove overlay if it exists
-            const overlay = document.querySelector('.menu-overlay');
-            if (overlay) {
-                overlay.style.opacity = '0';
-                setTimeout(() => {
-                    overlay.remove();
-                }, 300);
-            }
-        });
-    });
-});
+// Old mobile menu code removed - using clean version in DOMContentLoaded
 
 
 
@@ -1554,156 +1546,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // Update current year for copyright
 document.getElementById('current-year').textContent = new Date().getFullYear();
 
-// Mobile Navigation Toggle - FIXED VERSION
-document.addEventListener('DOMContentLoaded', function () {
-    console.log("DOM loaded - initializing mobile menu");
-
-    const navToggle = document.querySelector('.nav-toggle');
-    const navLinks = document.querySelector('.nav-links');
-    const navLinksItems = document.querySelectorAll('.nav-link');
-
-    console.log("Menu elements:", { navToggle, navLinks, navLinksItems });
-
-    // Create overlay for closing menu when clicking outside
-    const overlay = document.createElement('div');
-    overlay.className = 'menu-overlay';
-    document.body.appendChild(overlay);
-
-    // Style the overlay
-    overlay.style.cssText = `
-                position: fixed;
-                top: 65px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 999;
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 0.3s ease;
-                backdrop-filter: blur(3px);
-                -webkit-backdrop-filter: blur(3px);
-            `;
-
-    // Toggle mobile menu with direct class manipulation
-    if (navToggle) {
-        console.log("Adding click listener to menu toggle");
-
-        navToggle.addEventListener('click', function (e) {
-            console.log("Menu button clicked!");
-            e.stopPropagation();
-            e.preventDefault();
-
-            // Direct class manipulation
-            if (navLinks.classList.contains('active')) {
-                console.log("Closing menu");
-                navLinks.classList.remove('active');
-                overlay.classList.remove('active');
-                document.body.classList.remove('menu-open');
-                navToggle.classList.remove('active'); // Remove active class from toggle button
-
-                // Reset icon to bars with animation
-                const icon = navToggle.querySelector('i');
-                if (icon) {
-                    icon.style.transform = 'rotate(0deg)';
-                    setTimeout(() => {
-                        icon.classList.remove('fa-times');
-                        icon.classList.add('fa-bars');
-                    }, 150);
-                }
-
-                // Hide overlay
-                overlay.style.opacity = '0';
-                overlay.style.visibility = 'hidden';
-            } else {
-                console.log("Opening menu");
-                navLinks.classList.add('active');
-                overlay.classList.add('active');
-                document.body.classList.add('menu-open');
-                navToggle.classList.add('active'); // Add active class to toggle button
-
-                // Change icon to times (X) with animation
-                const icon = navToggle.querySelector('i');
-                if (icon) {
-                    icon.style.transform = 'rotate(90deg)';
-                    setTimeout(() => {
-                        icon.classList.remove('fa-bars');
-                        icon.classList.add('fa-times');
-                        icon.style.transform = 'rotate(0deg)';
-                    }, 150);
-                }
-
-                // Show overlay
-                overlay.style.opacity = '1';
-                overlay.style.visibility = 'visible';
-            }
-        });
-    }
-
-    // Close menu when clicking on a link
-    navLinksItems.forEach(link => {
-        link.addEventListener('click', function () {
-            navLinks.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.classList.remove('menu-open');
-            navToggle.classList.remove('active'); // Remove active class from toggle button
-
-            // Reset icon to bars
-            const icon = navToggle.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-
-            // Hide overlay
-            overlay.style.opacity = '0';
-            overlay.style.visibility = 'hidden';
-        });
-    });
-
-    // Close menu when clicking on overlay
-    overlay.addEventListener('click', function () {
-        navLinks.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.classList.remove('menu-open');
-        navToggle.classList.remove('active'); // Remove active class from toggle button
-
-        // Reset icon to bars
-        const icon = navToggle.querySelector('i');
-        if (icon) {
-            icon.style.transform = 'rotate(0deg)';
-            setTimeout(() => {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }, 150);
-        }
-
-        // Hide overlay
-        overlay.style.opacity = '0';
-        overlay.style.visibility = 'hidden';
-    });
-
-    // Close menu when window is resized to desktop size
-    window.addEventListener('resize', function () {
-        if (window.innerWidth > 767) {
-            navLinks.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.classList.remove('menu-open');
-            navToggle.classList.remove('active'); // Remove active class from toggle button
-
-            // Reset icon to bars
-            const icon = navToggle.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-
-            // Hide overlay
-            overlay.style.opacity = '0';
-            overlay.style.visibility = 'hidden';
-        }
-    });
-});
+// Old mobile menu code removed - using clean version in DOMContentLoaded
 
 
 
@@ -2093,69 +1936,7 @@ document.getElementById('current-year').textContent = new Date().getFullYear();
 // --- Script Block ---
 
 
-// Execute immediately to ensure it works
-(function () {
-    console.log("Mobile menu fix script running");
-
-    // Get elements
-    const navToggle = document.querySelector('.nav-toggle');
-    const navLinks = document.querySelector('.nav-links');
-
-    if (!navToggle || !navLinks) {
-        console.error("Menu elements not found:", { navToggle, navLinks });
-        return;
-    }
-
-    console.log("Menu elements found:", { navToggle, navLinks });
-
-    // Direct click handler - no event delegation
-    navToggle.onclick = function (e) {
-        e.preventDefault();
-        console.log("Menu button clicked!");
-
-        // Toggle active class on menu
-        if (navLinks.classList.contains('active')) {
-            navLinks.classList.remove('active');
-            document.body.classList.remove('menu-open');
-            navToggle.classList.remove('active');
-
-            // Change icon
-            const icon = navToggle.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-        } else {
-            navLinks.classList.add('active');
-            document.body.classList.add('menu-open');
-            navToggle.classList.add('active');
-
-            // Change icon
-            const icon = navToggle.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            }
-        }
-    };
-
-    // Close menu when clicking on links
-    const navLinksItems = document.querySelectorAll('.nav-link');
-    navLinksItems.forEach(link => {
-        link.onclick = function () {
-            navLinks.classList.remove('active');
-            document.body.classList.remove('menu-open');
-            navToggle.classList.remove('active');
-
-            // Change icon
-            const icon = navToggle.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-        };
-    });
-})();
+// Old mobile menu code removed - using clean version in DOMContentLoaded
 
 
 // Spline Loader Logic

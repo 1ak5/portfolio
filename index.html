@@ -105,6 +105,15 @@
                 </div>
             </div>
         </div>
+        <!-- Mobile Menu Container -->
+        <div class="nav-links">
+            <a href="#hero" class="nav-link">Home</a>
+            <a href="#about" class="nav-link">About</a>
+            <a href="#skills" class="nav-link">Skills</a>
+            <a href="#experience" class="nav-link">Experience</a>
+            <a href="#projects" class="nav-link">Projects</a>
+            <a href="#contact" class="nav-link">Contact</a>
+        </div>
     </nav>
 
     <!-- Hero Section -->
@@ -134,7 +143,7 @@
 
                 <a href="https://wa.me/918839624792" class="social-link" target="_blank"><i
                         class="fab fa-whatsapp"></i></a>
-                <a href="https://linkedin.com/in/adityasuryawanshi" class="social-link" target="main"><i
+                <a href="https://www.linkedin.com/in/aditya-suryawanshi-3734873a9?utm_source=share_via&utm_content=profile&utm_medium=member_android" class="social-link" target="main"><i
                         class="fab fa-linkedin"></i></a>
                 <a href="mailto:adityacodearena@gmail.com" class="social-link"><i class="fas fa-envelope"></i></a>
             </div>
@@ -1171,7 +1180,7 @@
                     <a href="mailto:adityacodearena@gmail.com" class="social-icon twitter" aria-label="gmail">
                         <i class="fas fa-envelope"></i>
                     </a>
-                    <a href="https://linkedin.com/in/adityasuryawanshi" class="social-icon instagram"
+                    <a href="https://www.linkedin.com/in/aditya-suryawanshi-3734873a9?utm_source=share_via&utm_content=profile&utm_medium=member_android" class="social-icon instagram"
                         aria-label="linkedin" target="main">
                         <i class="fab fa-linkedin"></i>
                     </a>
@@ -1193,6 +1202,273 @@
     <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="script.js"></script>
+    
+    <!-- FOOLPROOF Mobile Menu Handler - This WILL work -->
+    <script>
+    (function() {
+        'use strict';
+        
+        function initMobileMenu() {
+            const menuBtn = document.querySelector('.nav-toggle');
+            if (!menuBtn) return;
+
+            // Prevent double-init
+            if (window.__mobileMenuInitialized) return;
+            window.__mobileMenuInitialized = true;
+
+            // Build a brand-new menu appended to body (cannot be clipped/hidden by nav styles)
+            const menu = document.createElement('div');
+            menu.id = '__mobile-menu';
+            menu.setAttribute('role', 'dialog');
+            menu.setAttribute('aria-modal', 'true');
+            menu.setAttribute('aria-hidden', 'true');
+
+            // One-time helper styles (scoped to our injected menu only)
+            if (!document.getElementById('__mobile-menu-style')) {
+                const style = document.createElement('style');
+                style.id = '__mobile-menu-style';
+                style.textContent = `
+                    #__mobile-menu .__mm_icon{
+                        width: 22px;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        flex: 0 0 auto;
+                        color: rgba(192,192,255,0.9);
+                    }
+                    #__mobile-menu .__mm_icon i{ font-size: 15px; opacity: .95; }
+                    #__mobile-menu .__mm_text{
+                        flex: 1 1 auto;
+                        font-family: 'Poppins', system-ui, sans-serif;
+                        letter-spacing: .2px;
+                    }
+                    #__mobile-menu .__mm_chev{
+                        opacity: .55;
+                        transform: translateX(0);
+                        transition: transform .18s ease, opacity .18s ease;
+                        flex: 0 0 auto;
+                    }
+                    #__mobile-menu a:hover .__mm_chev{
+                        opacity: .9;
+                        transform: translateX(2px);
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Header (premium look)
+            const header = document.createElement('div');
+            header.id = '__mobile-menu-header';
+
+            const brand = document.createElement('div');
+            brand.id = '__mobile-menu-brand';
+            brand.textContent = 'Menu';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.id = '__mobile-menu-close';
+            closeBtn.type = 'button';
+            closeBtn.setAttribute('aria-label', 'Close menu');
+            closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            closeBtn.addEventListener('click', closeMenu, { passive: true });
+
+            header.appendChild(brand);
+            header.appendChild(closeBtn);
+            menu.appendChild(header);
+
+            // Prefer the explicit mobile container links if present; otherwise clone header links.
+            const sourceLinks =
+                document.querySelectorAll('nav .nav-links .nav-link').length
+                    ? document.querySelectorAll('nav .nav-links .nav-link')
+                    : document.querySelectorAll('nav .nav-left .nav-link, nav .nav-right a[href^="#"]');
+
+            const list = document.createElement('div');
+            list.id = '__mobile-menu-list';
+
+            sourceLinks.forEach(a => {
+                const link = document.createElement('a');
+                link.href = a.getAttribute('href') || '#';
+                const label = (a.textContent || '').trim() || 'Link';
+                const href = link.getAttribute('href') || '#';
+
+                const iconClassByHref = {
+                    '#hero': 'fa-house',
+                    '#about': 'fa-user',
+                    '#skills': 'fa-code',
+                    '#experience': 'fa-briefcase',
+                    '#projects': 'fa-layer-group',
+                    '#contact': 'fa-envelope'
+                };
+
+                const iconClass = iconClassByHref[href] || 'fa-circle';
+                link.innerHTML = `
+                    <span class="__mm_icon"><i class="fa-solid ${iconClass}"></i></span>
+                    <span class="__mm_text">${label}</span>
+                    <span class="__mm_chev"><i class="fa-solid fa-chevron-right"></i></span>
+                `;
+                link.style.cssText = `
+                    display: flex !important;
+                    align-items: center !important;
+                    width: 100% !important;
+                    padding: 14px 18px !important;
+                    color: rgba(255,255,255,0.94) !important;
+                    font-size: 15px !important;
+                    font-weight: 600 !important;
+                    text-decoration: none !important;
+                    gap: 12px !important;
+                    margin: 2px 8px !important;
+                    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+                    transition: transform .16s ease, background .16s ease, border-color .16s ease !important;
+                `;
+                link.addEventListener('click', closeMenu, { passive: true });
+                link.addEventListener('touchstart', () => {
+                    link.style.transform = 'translateX(3px)';
+                }, { passive: true });
+                link.addEventListener('touchend', () => {
+                    link.style.transform = '';
+                }, { passive: true });
+                link.addEventListener('mouseenter', () => {
+                    link.style.background = 'linear-gradient(90deg, rgba(108,99,255,0.22), transparent)';
+                    link.style.borderBottomColor = 'rgba(255,255,255,0.18)';
+                    link.style.transform = 'translateX(4px)';
+                });
+                link.addEventListener('mouseleave', () => {
+                    link.style.background = 'transparent';
+                    link.style.borderBottomColor = 'rgba(255,255,255,0.06)';
+                    link.style.transform = '';
+                });
+                list.appendChild(link);
+            });
+
+            menu.appendChild(list);
+            document.body.appendChild(menu);
+
+            // Overlay (outside click closes menu)
+            const overlay = document.createElement('div');
+            overlay.id = '__mobile-menu-overlay';
+            overlay.addEventListener('click', closeMenu, { passive: true });
+            document.body.appendChild(overlay);
+
+            // Force styles (inline + !important to win)
+            overlay.style.cssText = `
+                position: fixed !important;
+                inset: 0 !important;
+                background: rgba(0,0,0,0.55) !important;
+                backdrop-filter: blur(6px) !important;
+                -webkit-backdrop-filter: blur(6px) !important;
+                z-index: 99998 !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+                transition: opacity .25s ease !important;
+            `;
+
+            menu.style.cssText = `
+                position: fixed !important;
+                top: 0 !important;
+                right: 0 !important;
+                height: 100vh !important;
+                width: min(82vw, 340px) !important;
+                background: radial-gradient(1200px 500px at 30% -10%, rgba(108,99,255,0.18), transparent 50%),
+                           radial-gradient(900px 500px at 120% 20%, rgba(0,201,167,0.12), transparent 55%),
+                           rgba(10, 10, 15, 0.985) !important;
+                backdrop-filter: blur(14px) !important;
+                -webkit-backdrop-filter: blur(14px) !important;
+                z-index: 99999 !important;
+                transform: translateX(110%) !important;
+                transition: transform .28s ease !important;
+                padding-top: 0 !important;
+                box-shadow: -25px 0 70px rgba(0,0,0,0.65) !important;
+                border-left: 1px solid rgba(255,255,255,0.08) !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            `;
+
+            // Header styles + small glow line
+            header.style.cssText = `
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 2 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding: 18px 16px !important;
+                padding-top: 22px !important;
+                background: linear-gradient(180deg, rgba(10,10,15,0.96), rgba(10,10,15,0.65)) !important;
+                backdrop-filter: blur(14px) !important;
+                -webkit-backdrop-filter: blur(14px) !important;
+                border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+            `;
+
+            brand.style.cssText = `
+                font-family: 'Space Grotesk', 'Poppins', system-ui, sans-serif !important;
+                font-size: 15px !important;
+                font-weight: 700 !important;
+                letter-spacing: 1.2px !important;
+                text-transform: uppercase !important;
+                color: rgba(255,255,255,0.92) !important;
+            `;
+
+            closeBtn.style.cssText = `
+                width: 40px !important;
+                height: 40px !important;
+                border-radius: 12px !important;
+                border: 1px solid rgba(255,255,255,0.10) !important;
+                background: rgba(255,255,255,0.04) !important;
+                color: rgba(255,255,255,0.92) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                cursor: pointer !important;
+            `;
+
+            // Ensure button can be tapped
+            menuBtn.style.cssText += 'cursor:pointer !important; pointer-events:auto !important; z-index:100000 !important;';
+
+            // Public toggler (also usable by inline onclick if needed)
+            window.__toggleMobileMenu = function (e) {
+                if (e) { e.preventDefault?.(); e.stopPropagation?.(); }
+                const open = menu.getAttribute('aria-hidden') === 'true';
+                if (open) openMenu(); else closeMenu();
+            };
+
+            menuBtn.addEventListener('click', window.__toggleMobileMenu, false);
+
+            function setIcon(open) {
+                const icon = menuBtn.querySelector('i');
+                if (!icon) return;
+                icon.className = open ? 'fas fa-times' : 'fas fa-bars';
+            }
+
+            function openMenu() {
+                menu.setAttribute('aria-hidden', 'false');
+                menu.style.transform = 'translateX(0)';
+                overlay.style.opacity = '1';
+                overlay.style.pointerEvents = 'auto';
+                document.body.style.overflow = 'hidden';
+                setIcon(true);
+            }
+
+            function closeMenu() {
+                menu.setAttribute('aria-hidden', 'true');
+                menu.style.transform = 'translateX(110%)';
+                overlay.style.opacity = '0';
+                overlay.style.pointerEvents = 'none';
+                document.body.style.overflow = 'auto';
+                setIcon(false);
+            }
+        }
+        
+        // Try multiple times to ensure it works
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initMobileMenu);
+        } else {
+            initMobileMenu();
+        }
+        
+        // Also try after a short delay
+        setTimeout(initMobileMenu, 100);
+        setTimeout(initMobileMenu, 500);
+    })();
+    </script>
 </body>
 
 </html>
