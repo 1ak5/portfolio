@@ -3,7 +3,6 @@ const loader = document.querySelector('.loader-container');
 const percentBar = document.querySelector('.percent-bar');
 const customCursor = document.querySelector('.custom-cursor');
 const navToggle = document.querySelector('.nav-toggle');
-const navLinks = document.querySelector('.nav-links');
 const themeToggle = document.querySelector('.theme-toggle');
 const allNavLinks = document.querySelectorAll('.nav-link');
 const nav = document.querySelector('nav');
@@ -772,7 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
         element.addEventListener('mouseenter', expandCursor);
         element.addEventListener('mouseleave', shrinkCursor);
     });
-    
+
     // Make sure nav-toggle is clickable
     const navToggleBtn = document.querySelector('.nav-toggle');
     if (navToggleBtn) {
@@ -783,139 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // ==================== Mobile Navigation - FOOLPROOF VERSION ====================
-    // This WILL work - using inline styles to override any CSS conflicts
-    const mobileMenuToggle = document.querySelector('.nav-toggle');
-    const mobileMenu = document.querySelector('.nav-links');
-    
-    if (mobileMenuToggle && mobileMenu) {
-        // Set initial styles for mobile menu (hidden by default)
-        mobileMenu.style.cssText = `
-            position: fixed !important;
-            top: 65px !important;
-            left: 0 !important;
-            right: 0 !important;
-            width: 100% !important;
-            max-height: 0 !important;
-            overflow: hidden !important;
-            background-color: rgba(10, 10, 15, 0.98) !important;
-            backdrop-filter: blur(15px) !important;
-            -webkit-backdrop-filter: blur(15px) !important;
-            z-index: 9999 !important;
-            transition: max-height 0.4s ease, padding 0.4s ease !important;
-            padding: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: flex-start !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
-        `;
-        
-        // Style menu links
-        const menuLinks = mobileMenu.querySelectorAll('.nav-link');
-        menuLinks.forEach(link => {
-            link.style.cssText = `
-                width: 100% !important;
-                padding: 1.2rem 2rem !important;
-                text-align: center !important;
-                color: #C0C0C0 !important;
-                font-size: 1.4rem !important;
-                text-decoration: none !important;
-                border-bottom: 1px solid rgba(192, 192, 192, 0.1) !important;
-                transition: background 0.3s ease !important;
-            `;
-        });
-        
-        // Click handler for menu toggle button
-        mobileMenuToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const isActive = mobileMenu.classList.contains('active');
-            
-            if (isActive) {
-                // Close menu
-                mobileMenu.classList.remove('active');
-                mobileMenu.style.maxHeight = '0';
-                mobileMenu.style.padding = '0';
-                document.body.style.overflow = 'auto';
-                document.body.classList.remove('menu-open');
-                
-                // Change icon to bars
-                const icon = mobileMenuToggle.querySelector('i');
-                if (icon) {
-                    icon.className = 'fas fa-bars';
-                }
-            } else {
-                // Open menu
-                mobileMenu.classList.add('active');
-                mobileMenu.style.maxHeight = '100vh';
-                mobileMenu.style.padding = '2rem 0';
-                document.body.style.overflow = 'hidden';
-                document.body.classList.add('menu-open');
-                
-                // Change icon to times
-                const icon = mobileMenuToggle.querySelector('i');
-                if (icon) {
-                    icon.className = 'fas fa-times';
-                }
-            }
-        });
-        
-        // Close menu when clicking on links
-        menuLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                mobileMenu.classList.remove('active');
-                mobileMenu.style.maxHeight = '0';
-                mobileMenu.style.padding = '0';
-                document.body.style.overflow = 'auto';
-                document.body.classList.remove('menu-open');
-                
-                const icon = mobileMenuToggle.querySelector('i');
-                if (icon) {
-                    icon.className = 'fas fa-bars';
-                }
-            });
-        });
-        
-        // Close menu when clicking outside
-        document.addEventListener('click', function(e) {
-            if (mobileMenu.classList.contains('active') && 
-                !mobileMenu.contains(e.target) && 
-                !mobileMenuToggle.contains(e.target)) {
-                mobileMenu.classList.remove('active');
-                mobileMenu.style.maxHeight = '0';
-                mobileMenu.style.padding = '0';
-                document.body.style.overflow = 'auto';
-                document.body.classList.remove('menu-open');
-                
-                const icon = mobileMenuToggle.querySelector('i');
-                if (icon) {
-                    icon.className = 'fas fa-bars';
-                }
-            }
-        });
-        
-        // Close menu on window resize to desktop
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 767 && mobileMenu.classList.contains('active')) {
-                mobileMenu.classList.remove('active');
-                mobileMenu.style.maxHeight = '0';
-                mobileMenu.style.padding = '0';
-                document.body.style.overflow = 'auto';
-                document.body.classList.remove('menu-open');
-                
-                const icon = mobileMenuToggle.querySelector('i');
-                if (icon) {
-                    icon.className = 'fas fa-bars';
-                }
-            }
-        });
-        
-        console.log('✅ Mobile menu handler setup complete!');
-    } else {
-        console.error('❌ Mobile menu elements not found!', { mobileMenuToggle, mobileMenu });
-    }
+    // Mobile menu styling removed - using clean version in index.html script
 
     // Theme toggle event listener removed
     // window.addEventListener('scroll', handleScroll); // Removed for performance
