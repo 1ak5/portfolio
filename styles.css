@@ -1257,10 +1257,15 @@ img:hover {
 .project-img {
     position: relative;
     overflow: hidden;
+    height: 230px;
 }
 
 .image {
+    width: 100%;
     height: 100%;
+    object-fit: cover;
+    object-position: top;
+    display: block;
     margin: 0;
 }
 
