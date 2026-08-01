@@ -367,9 +367,9 @@ nav {
 .nav-container-wrapper {
     max-width: 1400px;
     margin: 0 auto;
-    background: rgba(10, 10, 10, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(10, 10, 10, 0.97);
+    /* backdrop-filter removed: over a near-opaque bg the blur was invisible but
+       re-sampled the backdrop on every scroll frame - a solid bg is free */
     border-radius: 15px;
     /* Pillow/Bar shape */
     padding: 1rem 4rem;
@@ -822,7 +822,7 @@ img:hover {
             rgba(192, 192, 192, 0.9),
             rgba(128, 128, 128, 0.9));
     background-size: 200% 100%;
-    animation: silverShine 1.8s infinite ease-in-out;
+    /* animation removed: background-position animations repaint every frame */
     box-shadow: 0 0 15px rgba(192, 192, 192, 0.6);
     border: none;
 }
@@ -861,17 +861,7 @@ img:hover {
         radial-gradient(circle at 90% 80%, rgba(169, 169, 169, 0.04) 0%, transparent 35%),
         radial-gradient(circle at 50% 50%, rgba(192, 192, 192, 0.02) 0%, transparent 45%);
     z-index: 0;
-    animation: slowBackground 15s infinite alternate ease-in-out;
-}
-
-@keyframes slowBackground {
-    0% {
-        background-position: 0% 0%;
-    }
-
-    100% {
-        background-position: 100% 100%;
-    }
+    /* animation removed: moving background-position on a full-section layer repaints the whole section every frame */
 }
 
 .skills-content {
@@ -1029,19 +1019,10 @@ img:hover {
     border-radius: 10px !important;
     position: relative !important;
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.2) !important;
-    animation: silverMetallicShine 3s infinite linear !important;
+    /* animation removed: background-position animations repaint every frame */
     transition: width 1.5s cubic-bezier(0.1, 0, 0.2, 1) !important;
 }
 
-@keyframes silverMetallicShine {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    100% {
-        background-position: 200% 50%;
-    }
-}
 
 .premium-skill-progress-glow {
     position: absolute !important;
@@ -1064,19 +1045,6 @@ img:hover {
     }
 }
 
-@keyframes silverShine {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-}
 
 .skills-footer {
     margin-top: 6rem;
@@ -3611,8 +3579,7 @@ a.contact-value:hover::after {
     width: 250px;
     height: 100px;
     background: #000;
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
+    /* backdrop-filter removed: it forces GPU re-blurring of the hero on every frame */
     z-index: 999999 !important;
     pointer-events: none;
     -webkit-mask-image: radial-gradient(circle at bottom right, black 0%, transparent 75%);
@@ -8953,5 +8920,35 @@ body {
         min-width: 0;
         max-width: 100%;
         width: 100%;
+    }
+}
+
+/* ================ PERFORMANCE: pause heavy infinite animations when off-screen ================ */
+/* The .paused class is toggled by script.js (IntersectionObserver) when a section leaves the viewport.
+   Pausing via animation-play-state stops the compositor work with zero visual impact in-view. */
+.paused .ticker,
+.paused .scroll-track,
+.paused .float-img,
+.paused .floating-skill,
+.paused .premium-skill-progress-glow {
+    animation-play-state: paused !important;
+}
+
+/* Pause Spline's WebGL render loop when the hero is off-screen (toggled by script.js) */
+.hero-paused spline-viewer,
+.hero-paused .spline-loader {
+    display: none !important;
+}
+
+/* Respect users who prefer reduced motion: kill heavy motion entirely */
+@media (prefers-reduced-motion: reduce) {
+    .ticker,
+    .scroll-track,
+    .float-img,
+    .floating-skill,
+    .scroll-indicator,
+    .section-underline::before,
+    .premium-skill-progress-glow {
+        animation: none !important;
     }
 }

@@ -189,6 +189,15 @@ const initAnimations = () => {
 
     gsap.registerPlugin(ScrollTrigger);
 
+    // Reduced motion: skip scroll-driven tweens, but still show final stat values
+    // (stats would otherwise stay at 0 since they're only set via ScrollTrigger.onEnter)
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('.stat-number').forEach(stat => {
+            stat.textContent = stat.dataset.target || '0';
+        });
+        return;
+    }
+
     // About section animation
     if (document.querySelector('.about-text')) {
         gsap.from('.about-text', {
@@ -230,6 +239,8 @@ const initAnimations = () => {
 const initSkills3D = () => {
     if (typeof THREE === 'undefined') return;
     if (window.matchMedia("(max-width: 768px)").matches) return;
+    // Respect users who prefer reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const container = document.getElementById('skills-3d-space');
     if (!container) return;
@@ -240,12 +251,13 @@ const initSkills3D = () => {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Cap pixel ratio at 1.5 - 2x on a 4k screen renders 4x the pixels for no visible gain
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     container.appendChild(renderer.domElement);
 
     // Particles
     const particlesGeometry = new THREE.BufferGeometry();
-    const particleCount = 400;
+    const particleCount = 250; // fewer particles = same look, less GPU load
 
     const posArray = new Float32Array(particleCount * 3);
     const scaleArray = new Float32Array(particleCount);
@@ -402,6 +414,8 @@ const initSkills3D = () => {
 // ==================== Smoke Cursor Effect (idle-paused) ====================
 (function () {
     if (window.matchMedia('(max-width: 767px)').matches) return;
+    // Respect users who prefer reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const canvas = document.getElementById('cursor-canvas');
     if (!canvas) return;
@@ -517,6 +531,11 @@ const initSkills3D = () => {
 
         for (let i = 0; i < 2; i++) {
             particles.push(new Particle(mouseX, mouseY, vx, vy));
+        }
+
+        // Cap total particles so a long mouse trail never accumulates unbounded work
+        if (particles.length > 150) {
+            particles.splice(0, particles.length - 150);
         }
 
         lastX = mouseX;
@@ -638,21 +657,67 @@ const applyTabletFix = () => {
     if (!modelContainer.querySelector('.tablet-watermark-blur')) {
         const blocker = document.createElement('div');
         blocker.className = 'tablet-watermark-blur';
+        // NOTE: previously used filter: blur(12px) + a 40px spread box-shadow -
+        // both are repainted on every frame and were a major paint cost.
+        // A plain solid cover hides the watermark just as well for a fraction of the cost.
         blocker.style.cssText = `
             position: absolute;
-            bottom: 12px;
-            right: 12px;
-            width: 120px;
-            height: 40px;
+            bottom: 0;
+            right: 0;
+            width: 160px;
+            height: 60px;
             background: rgba(0,0,0,1);
             z-index: 9999999;
-            box-shadow: 0 0 40px 30px rgba(0,0,0,1);
-            border-radius: 50%;
-            filter: blur(12px);
             pointer-events: none;
         `;
         modelContainer.appendChild(blocker);
     }
+};
+
+// ==================== Off-screen performance helpers ====================
+
+// Pause Spline's WebGL render loop when the hero scrolls out of view.
+// We toggle a CSS class on the container (not inline styles) so that the
+// positionSplineModel/applyTabletFix retries (which write inline display:block)
+// can never clobber the paused state. display:none halts the animation loop.
+const initSplineVisibilityPause = () => {
+    const viewer = document.querySelector('spline-viewer');
+    if (!viewer || !('IntersectionObserver' in window)) return;
+
+    const container = document.getElementById('hero-3d-space');
+    if (!container) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            container.classList.toggle('hero-paused', !entry.isIntersecting);
+        });
+    }, { rootMargin: '200px 0px' });
+
+    observer.observe(container);
+};
+
+// Pause heavy infinite CSS animations when their section leaves the viewport.
+// Sections get a 'paused' class that sets animation-play-state: paused (see styles.css).
+const initOffscreenPause = () => {
+    if (!('IntersectionObserver' in window)) return;
+
+    const selectors = [
+        '.ticker-wrap',
+        '.testimonials-hero',
+        '.testimonials-scroll-section',
+        '.skills-section'
+    ];
+
+    selectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(el => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    el.classList.toggle('paused', !entry.isIntersecting);
+                });
+            }, { rootMargin: '150px 0px' });
+            observer.observe(el);
+        });
+    });
 };
 
 // ==================== Init ====================
@@ -671,6 +736,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Skills 3D particles
     initSkills3D();
+
+    // Performance: pause heavy rendering/animation when off-screen
+    initSplineVisibilityPause();
+    initOffscreenPause();
 
     // Filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -717,6 +786,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             aboutText.querySelectorAll('.stat-item').forEach(item => { item.style.textAlign = 'center'; });
         }
+    }
+
+    // Use the lighter 2D canvas renderer on mobile/tablet to cut GPU load significantly.
+    // Must be set before the viewer initializes (it lazy-loads, so this is safe here).
+    const viewerEl = document.querySelector('spline-viewer');
+    if (viewerEl && (isMobileView() || isTabletView())) {
+        viewerEl.setAttribute('renderer', 'canvas');
     }
 
     // Spline positioning (retry as the viewer loads)
