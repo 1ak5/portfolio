@@ -1,19 +1,8 @@
 // ==================== DOM Elements ====================
 const loader = document.querySelector('.loader-container');
 const percentBar = document.querySelector('.percent-bar');
-const customCursor = document.querySelector('.custom-cursor');
-const navToggle = document.querySelector('.nav-toggle');
-const themeToggle = document.querySelector('.theme-toggle');
-const allNavLinks = document.querySelectorAll('.nav-link');
-const nav = document.querySelector('nav');
-const filterBtns = document.querySelectorAll('.filter-btn');
-const projectCards = document.querySelectorAll('.project-card');
-const statsNumbers = document.querySelectorAll('.stat-number');
-const progressBars = document.querySelectorAll('.progress-bar');
-const glitchText = document.querySelector('.glitch-text');
 
 // ==================== General Variables ====================
-let originalGlitchText = '';
 window.projectsLimit = 3;
 window.currentCategory = 'all';
 
@@ -37,24 +26,26 @@ window.filterProjects = function (category) {
             if (visibleCount < window.projectsLimit) {
                 card.style.display = 'block';
                 card.classList.add('visible');
-                gsap.to(card, {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 0.5,
-                    overwrite: true,
-                    ease: 'power2.out'
-                });
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(card, {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        duration: 0.5,
+                        overwrite: true,
+                        ease: 'power2.out'
+                    });
+                }
                 visibleCount++;
             } else {
                 card.classList.remove('visible');
                 card.style.display = 'none';
-                gsap.set(card, { opacity: 0, y: 30, scale: 0.95 });
+                if (typeof gsap !== 'undefined') gsap.set(card, { opacity: 0, y: 30, scale: 0.95 });
             }
         } else {
             card.classList.remove('visible');
             card.style.display = 'none';
-            gsap.set(card, { opacity: 0, y: 30, scale: 0.95 });
+            if (typeof gsap !== 'undefined') gsap.set(card, { opacity: 0, y: 30, scale: 0.95 });
         }
     });
 
@@ -87,7 +78,6 @@ const startLoading = () => {
         if (loadingProgress === 100) {
             clearInterval(interval);
             setTimeout(() => {
-                isLoaded = true;
                 if (loader) {
                     loader.classList.add('hidden');
                     loader.style.opacity = '0';
@@ -95,35 +85,24 @@ const startLoading = () => {
                     loader.style.pointerEvents = 'none';
                 }
 
-                try {
-                    if (typeof initAnimations === 'function') {
-                        initAnimations();
-                    } else {
-                        console.warn("initAnimations function not found");
-                    }
-
-                    if (typeof gsap !== 'undefined') {
-                        // Add reveal animation to body
-                        gsap.to('body', {
-                            opacity: 1,
-                            duration: 0.3,
-                            ease: 'power2.out'
-                        });
-                    } else {
-                        document.body.style.opacity = '1';
-                    }
-                } catch (e) {
-                    console.error("Error starting animations:", e);
+                if (typeof gsap !== 'undefined') {
+                    gsap.to('body', {
+                        opacity: 1,
+                        duration: 0.3,
+                        ease: 'power2.out'
+                    });
+                } else {
                     document.body.style.opacity = '1';
                 }
+
+                initAnimations();
             }, 100);
         }
     }, 20);
 
-    // Safety fallback: Force remove loader after 5 seconds max
+    // Safety fallback: force remove loader after 5 seconds max
     setTimeout(() => {
         if (loader && !loader.classList.contains('hidden')) {
-            console.warn("Force removing loader due to timeout");
             loader.classList.add('hidden');
             loader.style.opacity = '0';
             loader.style.visibility = 'hidden';
@@ -133,53 +112,17 @@ const startLoading = () => {
     }, 5000);
 };
 
-
-
-// Separate render function for better performance
-// renderCursor removed
-
-// expandCursor removed
-
-// shrinkCursor removed
-
-// Simplified trail creation
-// createCursorTrail removed
-
-// Add pulsing animation to cursor
-// startCursorPulse removed
-
-// Add glitch effect to hero text
-// startGlitchEffect removed (using newer version)
-
-// Start the random glitching
-// randomGlitch(); // Removed to avoid error if not defined
-
-
-// ==================== Navigation ====================
-// Old toggleMenu and closeMenu functions removed - using clean mobile menu handler in DOMContentLoaded
-
-// toggleTheme function is kept for backward compatibility but won't be used
-const toggleTheme = () => {
-    // This function is kept for backward compatibility
-    // But we're forcing dark mode
-    document.body.classList.add('dark-mode');
-    localStorage.setItem('theme', 'dark');
-};
-
+// ==================== Theme ====================
 const checkTheme = () => {
-    // Always use dark mode
     localStorage.setItem('theme', 'dark');
-    // Add dark mode if it was not previously set
     document.body.classList.add('dark-mode');
 };
 
-// Scroll handling replaced by IntersectionObserver
+// ==================== Scroll Observers ====================
 const initScrollObserver = () => {
-    // 1. Navigation Background on Scroll
+    // 1. Navigation background on scroll
     const nav = document.querySelector('nav');
-    const heroSection = document.querySelector('.hero-section') || document.body;
 
-    // Create a sentinel for the top of the page to toggle nav class
     const topSentinel = document.createElement('div');
     topSentinel.style.position = 'absolute';
     topSentinel.style.top = '0';
@@ -201,7 +144,7 @@ const initScrollObserver = () => {
 
     navObserver.observe(topSentinel);
 
-    // 2. Active Section Highlighting
+    // 2. Active section highlighting
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-link');
 
@@ -209,27 +152,20 @@ const initScrollObserver = () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const id = entry.target.getAttribute('id');
-                // Remove active from all
                 navLinks.forEach(link => link.classList.remove('active'));
-                // Add to current
                 const activeLink = document.querySelector(`.nav-link[href="#${id}"]`);
                 if (activeLink) activeLink.classList.add('active');
             }
         });
-    }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 }); // Trigger when section is in middle of viewport
+    }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
 
     sections.forEach(section => sectionObserver.observe(section));
 };
 
-// Initialize observers on load
-document.addEventListener('DOMContentLoaded', initScrollObserver);
-
-// ==================== Projects Filter (Handled Globally at top) ====================
-
 // ==================== Stats Counter Animation ====================
 const animateStats = () => {
-    statsNumbers.forEach(stat => {
-        const target = parseInt(stat.dataset.target);
+    document.querySelectorAll('.stat-number').forEach(stat => {
+        const target = parseInt(stat.dataset.target, 10) || 0;
         let count = 0;
         const increment = target / 50;
 
@@ -247,146 +183,69 @@ const animateStats = () => {
     });
 };
 
-// ==================== Progress Bars Animation ====================
-const animateProgressBars = () => {
-    progressBars.forEach(bar => {
-        const percent = bar.dataset.percent;
-        gsap.to(bar, {
-            width: `${percent}%`,
-            duration: 1.5,
-            ease: 'power2.out'
-        });
-    });
-};
-
-// ==================== Testimonial Slider ====================
-
-
-
-// ==================== GSAP Animations ====================
+// ==================== GSAP Scroll Animations ====================
 const initAnimations = () => {
-    console.log("Initializing all animations...");
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
 
-    // Register ScrollTrigger plugin
     gsap.registerPlugin(ScrollTrigger);
 
-    // Project cards reveal animation removed - handled in filterProjects for better control
-
-    // Skills cards reveal animation
-    gsap.utils.toArray('.skill-card').forEach((card, i) => {
-        gsap.from(card, {
+    // About section animation
+    if (document.querySelector('.about-text')) {
+        gsap.from('.about-text', {
             scrollTrigger: {
-                trigger: card,
+                trigger: '.about-text',
                 start: 'top bottom-=100',
                 toggleActions: 'play none none none'
             },
-            y: 50,
+            x: -100,
             opacity: 0,
-            duration: 0.6,
-            delay: i * 0.1
+            duration: 1
         });
-    });
+    }
 
-    // About section animation
-    gsap.from('.about-text', {
-        scrollTrigger: {
-            trigger: '.about-text',
-            start: 'top bottom-=100',
-            toggleActions: 'play none none none'
-        },
-        x: -100,
-        opacity: 0,
-        duration: 1
-    });
-
-    gsap.from('.about-image', {
-        scrollTrigger: {
-            trigger: '.about-image',
-            start: 'top bottom-=100',
-            toggleActions: 'play none none none'
-        },
-        x: 100,
-        opacity: 0,
-        duration: 1
-    });
-
-    // Contact section animation - basic animations (keeping for backwards compatibility)
-    gsap.from('.contact-info', {
-        scrollTrigger: {
-            trigger: '.contact-info',
-            start: 'top bottom-=100',
-            toggleActions: 'play none none none'
-        },
-        x: -100,
-        opacity: 0,
-        duration: 1
-    });
-
-    gsap.from('.contact-form-container', {
-        scrollTrigger: {
-            trigger: '.contact-form-container',
-            start: 'top bottom-=100',
-            toggleActions: 'play none none none'
-        },
-        x: 100,
-        opacity: 0,
-        duration: 1
-    });
+    if (document.querySelector('.about-image')) {
+        gsap.from('.about-image', {
+            scrollTrigger: {
+                trigger: '.about-image',
+                start: 'top bottom-=100',
+                toggleActions: 'play none none none'
+            },
+            x: 100,
+            opacity: 0,
+            duration: 1
+        });
+    }
 
     // Stats animation
-    ScrollTrigger.create({
-        trigger: '.stats-container',
-        start: 'top bottom-=150',
-        onEnter: () => animateStats()
-    });
-
-    // Progress bars animation
-    ScrollTrigger.create({
-        trigger: '.skills-grid',
-        start: 'top bottom-=150',
-        onEnter: () => animateProgressBars()
-    });
-
-    // Explicitly call the contact animations
-    console.log("About to initialize contact animations...");
-    initContactAnimations();
+    if (document.querySelector('.stats-container')) {
+        ScrollTrigger.create({
+            trigger: '.stats-container',
+            start: 'top bottom-=150',
+            onEnter: () => animateStats()
+        });
+    }
 };
 
-// ==================== THREE.JS 3D ANIMATIONS ====================
-
-// Hero Section 3D Animation
-// initHero3D removed for performance (Spline used instead)
-
-
-// Orphaned code removed
-
-
-// Skills Section 3D Animation
+// ==================== Skills 3D Particles ====================
 const initSkills3D = () => {
-    // Check for mobile device - disable 3D on mobile for performance
-    if (window.matchMedia("(max-width: 768px)").matches) {
-        return;
-    }
+    if (typeof THREE === 'undefined') return;
+    if (window.matchMedia("(max-width: 768px)").matches) return;
 
     const container = document.getElementById('skills-3d-space');
     if (!container) return;
 
-    // Scene setup
     const scene = new THREE.Scene();
-
-    // Camera setup
     const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.z = 30;
 
-    // Renderer setup
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
-    // Reduced particle count for performance
+    // Particles
     const particlesGeometry = new THREE.BufferGeometry();
-    const particleCount = 400; // Reduced from 700
+    const particleCount = 400;
 
     const posArray = new Float32Array(particleCount * 3);
     const scaleArray = new Float32Array(particleCount);
@@ -406,7 +265,6 @@ const initSkills3D = () => {
     particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
     particlesGeometry.setAttribute('scale', new THREE.BufferAttribute(scaleArray, 1));
 
-    // Custom shader material
     const particlesMaterial = new THREE.ShaderMaterial({
         uniforms: {
             color1: { value: new THREE.Color(0x6c63ff) },
@@ -445,9 +303,9 @@ const initSkills3D = () => {
     const particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
     scene.add(particleSystem);
 
-    // Optimized: Static icons without expensive lights
-    const iconGeometry = new THREE.SphereGeometry(0.5, 16, 16); // Reduced segments
-    const iconCount = 8; // Reduced count
+    // Orbiting icons
+    const iconGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+    const iconCount = 8;
     const icons = [];
 
     for (let i = 0; i < iconCount; i++) {
@@ -470,9 +328,6 @@ const initSkills3D = () => {
             Math.sin(angle) * distance
         );
 
-        // Fake glow with sprite instead of PointLight
-        // (Skipped for simplicity and performance)
-
         icon.userData = {
             orbitRadius: distance,
             orbitAngle: angle,
@@ -483,27 +338,17 @@ const initSkills3D = () => {
         scene.add(icon);
     }
 
-    // REMOVED: Expensive dynamic lines calculation
-
-    // Visibility Check
+    // Pause rendering when the section is off-screen or the tab is hidden
     let isVisible = true;
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            isVisible = entry.isIntersecting;
-        });
-    }, { threshold: 0 });
-    observer.observe(container);
-
-    // Animation
+    let rafId = null;
     let time = 0;
-    const animate = () => {
-        requestAnimationFrame(animate);
 
-        if (!isVisible) return; // Skip rendering if not visible
+    const renderLoop = () => {
+        rafId = null;
+        if (!isVisible || document.hidden) return;
 
         time += 0.01;
         particlesMaterial.uniforms.time.value = time;
-
         particleSystem.rotation.y += 0.001;
 
         icons.forEach(icon => {
@@ -513,520 +358,66 @@ const initSkills3D = () => {
         });
 
         renderer.render(scene, camera);
+        rafId = requestAnimationFrame(renderLoop);
     };
 
-    animate();
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            isVisible = entry.isIntersecting;
+            if (isVisible && rafId === null && !document.hidden) {
+                rafId = requestAnimationFrame(renderLoop);
+            }
+        });
+    }, { threshold: 0 });
+    observer.observe(container);
 
-    // Handle resize
+    const onVisibilityChange = () => {
+        if (!document.hidden && isVisible && rafId === null) {
+            rafId = requestAnimationFrame(renderLoop);
+        }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    rafId = requestAnimationFrame(renderLoop);
+
+    // Resize handling
     const handleResize = () => {
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(container.clientWidth, container.clientHeight);
     };
-
     window.addEventListener('resize', handleResize);
 
-    // Handle mouse movement for interactive effect
+    // Mouse parallax
     const handleMouseMove = (e) => {
         const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
         const mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
 
-        // Subtle rotation based on mouse position
         particleSystem.rotation.y = mouseX * 0.3;
         particleSystem.rotation.x = mouseY * 0.3;
     };
-
     window.addEventListener('mousemove', handleMouseMove);
-
-    // Clean up function
-    return () => {
-        window.removeEventListener('resize', handleResize);
-        window.removeEventListener('mousemove', handleMouseMove);
-        container.removeChild(renderer.domElement);
-    };
 };
 
-// Skills Progress Animation
-const animateSkills = () => {
-    const skillElements = document.querySelectorAll('.premium-skill-progress');
-
-    skillElements.forEach(skill => {
-        // Get the target width from inline style
-        const targetWidth = skill.style.width;
-
-        // Set all skills to consistent silver styling
-        skill.style.background = "linear-gradient(90deg, rgba(192, 192, 200, 1), rgba(220, 220, 230, 1), rgba(192, 192, 200, 1), rgba(230, 230, 240, 1))";
-        skill.style.backgroundSize = "200% 100%";
-        skill.style.boxShadow = "0 0 8px rgba(192, 192, 200, 0.6)";
-
-        // Force the width to match the percentage immediately
-        skill.style.width = targetWidth;
-
-        // Add animation manually
-        skill.style.animation = "silverShine 2s infinite ease-in-out";
-    });
-
-    // Add floating skill elements to the 3D container
-    addFloatingSkills();
-};
-
-// Add floating skill elements to the background
-const addFloatingSkills = () => {
-    const container = document.getElementById('skills-3d-space');
-    if (!container) return;
-
-    // Only add floating skills if they don't already exist
-    if (container.querySelector('.floating-skill')) return;
-
-    const skills = [
-        'HTML5', 'CSS3', 'JavaScript', 'React',
-        'Node.js', 'SASS', 'Git', 'UI/UX'
-    ];
-
-    const colors = [
-        '#6c63ff', '#00c9a7', '#ff6b6b', '#feca57',
-        '#1dd1a1', '#ff9ff3', '#54a0ff', '#5f27cd'
-    ];
-
-    // Create floating skill elements
-    skills.forEach((skill, index) => {
-        const element = document.createElement('div');
-        element.className = 'floating-skill';
-        element.textContent = skill;
-        element.style.backgroundColor = colors[index % colors.length];
-
-        // Random positioning
-        const xPos = Math.random() * 100;
-        const yPos = Math.random() * 100;
-        const zPos = Math.random() * 50 - 25;
-        const scale = 0.8 + Math.random() * 0.4;
-        const rotation = Math.random() * 20 - 10;
-
-        element.style.left = `${xPos}%`;
-        element.style.top = `${yPos}%`;
-        element.style.transform = `translateZ(${zPos}px) scale(${scale}) rotate(${rotation}deg)`;
-
-        // Animation duration and delay
-        const duration = 15 + Math.random() * 20;
-        const delay = Math.random() * -20;
-
-        element.style.animationDuration = `${duration}s`;
-        element.style.animationDelay = `${delay}s`;
-
-        container.appendChild(element);
-    });
-};
-
-// Contact Section Animations
-const initContactAnimations = () => {
-    console.log("Contact animations initializing...");
-
-    const contactInfo = document.querySelector('.contact-info');
-    const contactForm = document.querySelector('.contact-form-container');
-    const contactItems = document.querySelectorAll('.contact-item');
-    const socialIcons = document.querySelectorAll('.contact-social .social-icon');
-
-    // Set initial visibility for all elements
-    if (contactInfo) contactInfo.style.opacity = "1";
-    if (contactForm) contactForm.style.opacity = "1";
-    contactItems.forEach(item => item.style.opacity = "1");
-    socialIcons.forEach(icon => icon.style.opacity = "1");
-
-    console.log("Contact elements found:", {
-        "contactInfo": contactInfo ? "Found" : "Not found",
-        "contactForm": contactForm ? "Found" : "Not found",
-        "contactItems": contactItems.length,
-        "socialIcons": socialIcons.length
-    });
-
-    // Only run GSAP animations if ScrollTrigger is available
-    if (window.ScrollTrigger && gsap) {
-        // Staggered animation for contact items
-        gsap.from(contactItems, {
-            scrollTrigger: {
-                trigger: contactInfo,
-                start: 'top bottom-=100',
-                toggleActions: 'play none none none'
-            },
-            opacity: 0.5, // Start with partial opacity
-            x: -50,
-            stagger: 0.15,
-            duration: 0.8,
-            ease: 'power2.out'
-        });
-
-        // Animation for contact form
-        gsap.from(contactForm, {
-            scrollTrigger: {
-                trigger: contactForm,
-                start: 'top bottom-=100',
-                toggleActions: 'play none none none'
-            },
-            opacity: 0.5, // Start with partial opacity
-            y: 50,
-            duration: 1,
-            ease: 'power3.out'
-        });
-
-        // Staggered animation for social icons
-        gsap.from(socialIcons, {
-            scrollTrigger: {
-                trigger: '.contact-social',
-                start: 'top bottom-=50',
-                toggleActions: 'play none none none'
-            },
-            opacity: 0.5, // Start with partial opacity
-            y: 30,
-            scale: 0.5,
-            stagger: 0.1,
-            duration: 0.6,
-            ease: 'back.out(1.7)'
-        });
-
-        console.log("GSAP animations applied");
-    } else {
-        console.log("GSAP or ScrollTrigger not available, skipping animations");
-    }
-
-    // Form input focus effects
-    const formInputs = document.querySelectorAll('.form-group input, .form-group textarea');
-
-    formInputs.forEach(input => {
-        // Add active class to parent when input is focused
-        input.addEventListener('focus', () => {
-            input.parentElement.classList.add('input-active');
-        });
-
-        // Remove active class when input loses focus
-        input.addEventListener('blur', () => {
-            if (input.value.trim() === '') {
-                input.parentElement.classList.remove('input-active');
-            }
-        });
-
-        // Check if input has value on page load
-        if (input.value.trim() !== '') {
-            input.parentElement.classList.add('input-active');
-        }
-    });
-
-    // Add subtle parallax effect to contact info
-    window.addEventListener('mousemove', e => {
-        if (!contactInfo) return; // Skip if element not found
-
-        const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
-        const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
-
-        gsap.to(contactInfo, {
-            x: moveX,
-            y: moveY,
-            duration: 1,
-            ease: 'power1.out'
-        });
-    });
-};
-
-// Call this function after page load
-window.addEventListener('load', () => {
-    setTimeout(fixContactSectionVisibility, 1000);
-    setTimeout(fixContactSectionVisibility, 3000); // Try again after 3 seconds
-});
-
-// ==================== Event Listeners ====================
-document.addEventListener('DOMContentLoaded', () => {
-    // Start loader
-    startLoading();
-    // checkTheme(); // Removed
-
-    // Check theme
-    checkTheme();
-
-    // Initialize 3D scenes
-    // Hero3D init removed
-    const cleanupSkills3D = initSkills3D();
-
-    // Initialize cursor pulse animation
-    setTimeout(() => {
-        // startCursorPulse removed
-    }, 2000);
-
-    // Initialize glitch text effect
-    setTimeout(() => {
-        // startGlitchEffect removed
-    }, 2500);
-
-    // Set initial display for testimonials - with better error handling
-    // Testimonials initialization removed
-
-    // Initialize projects section
-    window.filterProjects('all');
-
-    // Start testimonial auto-slide
-    // Testimonial event listeners removed
-
-    // Event listeners
-    // updateCursor listener removed
-
-    document.querySelectorAll('a, button, .theme-toggle, .project-card, .skill-card').forEach(element => {
-        element.addEventListener('mouseenter', expandCursor);
-        element.addEventListener('mouseleave', shrinkCursor);
-    });
-
-    // Make sure nav-toggle is clickable
-    const navToggleBtn = document.querySelector('.nav-toggle');
-    if (navToggleBtn) {
-        navToggleBtn.style.cssText += `
-            cursor: pointer !important;
-            pointer-events: auto !important;
-            z-index: 10000 !important;
-        `;
-    }
-
-    // Mobile menu styling removed - using clean version in index.html script
-
-    // Theme toggle event listener removed
-    // window.addEventListener('scroll', handleScroll); // Removed for performance
-
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            window.projectsLimit = 3; // Reset limit on filter change
-            window.filterProjects(btn.dataset.filter);
-        });
-    });
-
-    const viewMoreBtn = document.getElementById('view-more-projects');
-    if (viewMoreBtn) {
-        viewMoreBtn.onclick = (e) => {
-            e.preventDefault();
-            window.projectsLimit = 999;
-            window.filterProjects(window.currentCategory);
-        };
-    }
-
-    testimonialDots.forEach((dot, index) => {
-        dot.addEventListener('click', () => showTestimonial(index));
-    });
-
-    prevBtn.addEventListener('click', prevTestimonial);
-    nextBtn.addEventListener('click', nextTestimonial);
-
-    // Add hover animations to project cards
-    projectCards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            gsap.to(card, {
-                y: -15,
-                scale: 1.03,
-                boxShadow: '0 20px 50px rgba(108, 99, 255, 0.3)',
-                duration: 0.3,
-                ease: 'power2.out'
-            });
-        });
-
-        card.addEventListener('mouseleave', () => {
-            gsap.to(card, {
-                y: 0,
-                scale: 1,
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-                duration: 0.3,
-                ease: 'power2.out'
-            });
-        });
-    });
-
-    // Clean up on unload
-    window.addEventListener('unload', () => {
-        cleanupHero3D();
-        cleanupSkills3D();
-        stopTestimonialAutoSlide();
-    });
-
-    // Initialize skill animations
-    animateSkills();
-
-    // Initialize contact animations
-    initContactAnimations();
-});
-
-// ==================== Form Submission ====================
-document.addEventListener('submit', function (e) {
-    const form = e.target;
-
-    if (form.classList.contains('contact-form') || form.classList.contains('newsletter-form')) {
-        e.preventDefault();
-
-        // Simulate form submission
-        const submitButton = form.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-
-        submitButton.disabled = true;
-        submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`;
-
-        setTimeout(() => {
-            form.reset();
-            submitButton.innerHTML = `<i class="fas fa-check"></i> Sent Successfully!`;
-
-            setTimeout(() => {
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
-            }, 2000);
-        }, 1500);
-    }
-});
-
-// Stop animation when cursor leaves window
-document.addEventListener('mouseleave', () => {
-    if (rafID) {
-        cancelAnimationFrame(rafID);
-        rafID = null;
-    }
-});
-
-// Restart animation when cursor enters window
-document.addEventListener('mouseenter', () => {
-    if (!rafID && isLoaded) {
-        rafID = requestAnimationFrame(renderCursor);
-    }
-});
-
-// Fix contact section visibility on window load
-window.addEventListener('load', () => {
-    // Force display and visibility on all contact elements
-    document.querySelectorAll('.contact-section, .contact-content, .contact-info, .contact-form-container, .contact-item').forEach(el => {
-        el.style.display = '';
-        el.style.opacity = '1';
-        el.style.visibility = 'visible';
-    });
-
-    // Re-initialize contact animations
-    initContactAnimations();
-
-    console.log("Window load: Contact section visibility enforced");
-});
-
-
-
-document.addEventListener('DOMContentLoaded', function () { const e = window.matchMedia('(min-width: 768px) and (max-width: 1024px)').matches; if (e) { const a = document.querySelector('#about .about-text'); a && (a.style.textAlign = 'center'); const b = document.querySelectorAll('#about .about-text p'); b.forEach(c => { c.style.textAlign = 'center' }); const d = document.querySelector('#about .stats-container'); d && (d.style.display = 'flex', d.style.justifyContent = 'center', d.style.margin = '2rem auto'); const f = document.querySelectorAll('#about .stat-item'); f.forEach(g => { g.style.textAlign = 'center' }) } })
-
-
-
-// Glitch Text Effect for Hero Section
-document.addEventListener('DOMContentLoaded', () => {
-    // Wait for page to load completely and other animations to finish
-    setTimeout(initGlitchEffect, 2200);
-});
-
-function initGlitchEffect() {
-    const nameElement = document.querySelector('.glitch-text .highlight');
-    if (!nameElement) return;
-
-    const originalText = nameElement.getAttribute('data-glitch') || nameElement.textContent;
-    // Extended glitch character set for more variety
-    const glitchChars = '</>;#{*?$%>@&^~[]{}`!|\\+=-_:;"\',.0123456789';
-
-    // Function to create a glitched version of the text
-    function glitchText() {
-        let glitched = '';
-        // Increase glitch count for more intensity (2-5 characters)
-        const glitchCount = Math.floor(Math.random() * 4) + 2;
-        const positions = [];
-
-        // Randomly select positions to glitch
-        for (let i = 0; i < glitchCount; i++) {
-            positions.push(Math.floor(Math.random() * originalText.length));
-        }
-
-        // Create glitched text by replacing characters at random positions
-        for (let i = 0; i < originalText.length; i++) {
-            if (positions.includes(i)) {
-                glitched += glitchChars.charAt(Math.floor(Math.random() * glitchChars.length));
-            } else {
-                glitched += originalText.charAt(i);
-            }
-        }
-
-        return glitched;
-    }
-
-    // Apply the glitch effect and then restore original text
-    function applyGlitch() {
-        // Apply glitch
-        nameElement.textContent = glitchText();
-
-        // Restore original text after a short delay (faster for more rapid glitching)
-        setTimeout(() => {
-            nameElement.textContent = originalText;
-        }, 780);
-    }
-
-    // Function to create a sequence of glitches
-    function glitchSequence(count, interval) {
-        for (let i = 0; i < count; i++) {
-            setTimeout(applyGlitch, i * interval);
-        }
-    }
-
-    // Start the random glitching
-    function startRandomGlitching() {
-        // Random delay between 1-5 seconds (reduced for more frequent glitches)
-        const delay = Math.random() * 4000 + 2500;
-
-        setTimeout(() => {
-            // Random number of glitches in sequence (3-7)
-            const glitchCount = Math.floor(Math.random() * 5) + 3;
-            // Faster interval for more intense effect
-            glitchSequence(glitchCount, 220);
-
-            // Continue glitching randomly
-            startRandomGlitching();
-        }, delay);
-    }
-
-    /* Add hover effect
-    nameElement.addEventListener('mouseenter', () => {
-        // More intense glitch on hover - 7 rapid glitches
-        glitchSequence(7, 80);
-    });
-    
-    // Add click effect for mobile users
-    nameElement.addEventListener('click', () => {
-        // Super intense glitch on click - 10 very rapid glitches
-        glitchSequence(10, 60);
-    });*/
-
-    // Start random glitching
-    startRandomGlitching();
-
-    // Initial glitch effect when loaded
-    setTimeout(() => {
-        glitchSequence(5, 100);
-    }, 500);
-}
-
-
-// ==================== MIGRATED SCRIPTS FROM HTML ====================
-
-
-// Enhanced Realistic Smoke Cursor Effect (Fast Pure Smoke - No Dots - Zero Delay)
-// Enhanced Realistic Smoke Cursor Effect (Optimized with Pre-rendering)
+// ==================== Smoke Cursor Effect (idle-paused) ====================
 (function () {
     if (window.matchMedia('(max-width: 767px)').matches) return;
 
     const canvas = document.getElementById('cursor-canvas');
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true }); // Optimize context
+    const ctx = canvas.getContext('2d', { alpha: true });
 
     let mouseX = -100;
     let mouseY = -100;
     let lastX = -100;
     let lastY = -100;
     let particles = [];
+    let rafId = null;
 
     // Pre-render the gradient particle
     const particleCanvas = document.createElement('canvas');
     const particleCtx = particleCanvas.getContext('2d');
-    const particleSize = 64; // Power of 2
+    const particleSize = 64;
     particleCanvas.width = particleSize;
     particleCanvas.height = particleSize;
 
@@ -1042,11 +433,8 @@ function initGlitchEffect() {
     particleCtx.fill();
 
     function resize() {
-        // Optimize canvas size handling
-        const dpr = window.devicePixelRatio || 1;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        // Don't scale context to simple pixel rendering for smoke
     }
     window.addEventListener('resize', resize, { passive: true });
     resize();
@@ -1078,49 +466,20 @@ function initGlitchEffect() {
             if (this.life <= 0) return;
             ctx.save();
             ctx.translate(this.x, this.y);
-            // Rotation is less visible on round nebulas, skip for perf if needed, but keeping for fidelity
             ctx.rotate(this.rotation);
             ctx.globalAlpha = this.life * this.opacity;
-            // Draw pre-rendered image instead of creating gradient
             ctx.drawImage(particleCanvas, -this.size, -this.size * 0.8, this.size * 2, this.size * 1.6);
             ctx.restore();
         }
     }
 
-    // Rate limit mouse events
-    let lastEventTime = 0;
-    document.addEventListener('mousemove', (e) => {
-        const now = Date.now();
-        if (now - lastEventTime < 16) return; // Cap at ~60fps input
-
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-        lastEventTime = now;
-
-        const vx = mouseX - lastX;
-        const vy = mouseY - lastY;
-
-        for (let i = 0; i < 2; i++) {
-            particles.push(new Particle(mouseX, mouseY, vx, vy));
-        }
-
-        lastX = mouseX;
-        lastY = mouseY;
-    }, { passive: true });
-
+    // Only run the animation loop while particles exist (fully idle when still)
     function animate() {
+        rafId = null;
+        if (particles.length === 0) return;
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.globalCompositeOperation = 'screen';
-
-        // Add particles if moving - check if moved significantly
-        if (Math.abs(mouseX - lastX) > 0.5 || Math.abs(mouseY - lastY) > 0.5) {
-            // Only add trails if moving enough
-        } else {
-            // Maybe add fewer idle particles
-        }
-
-        // Optimization: Batch drawing if possible (difficult with varying transforms)
-        // Manual loop implies batching logic per particle
 
         for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
@@ -1131,791 +490,388 @@ function initGlitchEffect() {
                 i--;
             }
         }
-        requestAnimationFrame(animate);
-    }
-    animate();
 
+        if (particles.length > 0) {
+            rafId = requestAnimationFrame(animate);
+        }
+    }
+
+    // Rate-limit mouse events
+    let lastEventTime = 0;
+    document.addEventListener('mousemove', (e) => {
+        const now = Date.now();
+        if (now - lastEventTime < 16) return;
+        lastEventTime = now;
+
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+
+        // Lazy-init last position so the first frame doesn't streak wildly
+        if (lastX === -100 && lastY === -100) {
+            lastX = mouseX;
+            lastY = mouseY;
+        }
+
+        const vx = Math.max(-30, Math.min(30, mouseX - lastX));
+        const vy = Math.max(-30, Math.min(30, mouseY - lastY));
+
+        for (let i = 0; i < 2; i++) {
+            particles.push(new Particle(mouseX, mouseY, vx, vy));
+        }
+
+        lastX = mouseX;
+        lastY = mouseY;
+
+        if (rafId === null) {
+            rafId = requestAnimationFrame(animate);
+        }
+    }, { passive: true });
 })();
 
-// Project Video Performance Optimization
-document.addEventListener('DOMContentLoaded', function () {
-    const projectVideos = document.querySelectorAll('.vdo');
+// ==================== Spline 3D Model Positioning ====================
+const isMobileView = () => window.innerWidth <= 767;
+const isTabletView = () => window.innerWidth >= 768 && window.innerWidth <= 1024;
 
-    if ('IntersectionObserver' in window) {
-        const videoObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.play().catch(e => console.log("Video play interrupted"));
-                } else {
-                    entry.target.pause();
-                }
-            });
-        }, { threshold: 0.1 });
+// Hide the Spline watermark (a few attempts - no infinite polling)
+const removeSplineWatermark = () => {
+    const selectors = [
+        'spline-viewer a',
+        'spline-viewer a[target="_blank"]',
+        'spline-viewer div[class*="logo"]',
+        'spline-viewer div[class*="watermark"]',
+        'spline-viewer > div > div > a',
+        'spline-viewer [data-name*="logo"]',
+        'spline-viewer [data-name*="watermark"]',
+        'spline-viewer > div > div:last-child'
+    ];
 
-        projectVideos.forEach(video => {
-            videoObserver.observe(video);
-            // Ensure muted is set for autoplay
-            video.muted = true;
+    selectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(el => {
+            el.style.display = 'none';
+            el.style.opacity = '0';
+            el.style.visibility = 'hidden';
+            el.style.pointerEvents = 'none';
+            try {
+                el.remove();
+            } catch (e) {
+                // ignore
+            }
         });
+    });
+};
+
+// Watermark blocker for mobile
+const addWatermarkBlocker = () => {
+    if (!isMobileView()) return;
+    const container = document.getElementById('hero-3d-space');
+    if (!container) return;
+
+    if (!container.querySelector('.spline-watermark-blocker')) {
+        const blocker = document.createElement('div');
+        blocker.className = 'spline-watermark-blocker';
+        container.appendChild(blocker);
     }
-});
+};
 
+// Position the Spline model per breakpoint (consolidated from multiple scripts)
+const positionSplineModel = () => {
+    const splineViewer = document.querySelector('spline-viewer');
+    if (!splineViewer) return;
 
-
-// --- Script Block ---
-
-
-// Disable Three.js 3D model on mobile - only use Spline
-document.addEventListener('DOMContentLoaded', function () {
-    // Check if device is mobile
-    const isMobile = window.matchMedia("(max-width: 767px)").matches;
-
-    if (isMobile) {
-        // Create a style element to disable Three.js canvas
-        const styleEl = document.createElement('style');
-        styleEl.textContent = `
-                    #hero-3d-space canvas:not(canvas[data-spline-viewer]) {
-                        display: none !important;
-                        visibility: hidden !important;
-                        opacity: 0 !important;
-                        pointer-events: none !important;
-                    }
-                `;
-        document.head.appendChild(styleEl);
-
-        // Prevent the initHero3D from running on mobile
-        window.preventHero3D = true;
+    if (isMobileView()) {
+        splineViewer.style.transform = 'translateX(-40%)';
+        addWatermarkBlocker();
+    } else if (isTabletView()) {
+        applyTabletFix();
+    } else {
+        splineViewer.style.transform = 'translateX(30%)';
     }
-});
+};
 
+// Tablet layout fix (hero grid flip + model scaling)
+const applyTabletFix = () => {
+    const heroSection = document.querySelector('.hero-section');
+    const heroContent = document.querySelector('.hero-content');
+    const modelContainer = document.querySelector('.hero-3d-container');
+    const splineViewer = document.querySelector('spline-viewer');
 
+    if (!heroSection || !heroContent || !modelContainer) return;
 
-// --- Script Block ---
+    if (splineViewer) {
+        splineViewer.style.transform = 'translateX(8%) scale(1.4)';
+        splineViewer.style.width = '100%';
+        splineViewer.style.height = '100%';
+        splineViewer.style.opacity = '1';
+        splineViewer.style.visibility = 'visible';
+        splineViewer.style.display = 'block';
+        splineViewer.style.background = 'transparent';
+        splineViewer.style.boxShadow = 'none';
+        splineViewer.setAttribute('loading', 'eager');
+    }
 
+    modelContainer.style.height = '550px';
+    modelContainer.style.minHeight = '550px';
+    modelContainer.style.maxHeight = '550px';
+    modelContainer.style.background = 'transparent';
+    modelContainer.style.boxShadow = 'none';
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Check if we're in tablet view
-    if (window.matchMedia('(min-width: 768px) and (max-width: 1024px)').matches) {
-        // Get the premium description elements
-        const premiumDesc = document.querySelector('.premium-description');
+    heroSection.style.display = 'grid';
+    heroSection.style.gridTemplateColumns = '1fr';
+    heroSection.style.gridTemplateRows = 'auto auto';
+    heroSection.style.padding = '120px 20px 80px 20px';
+    heroSection.style.height = 'auto';
+    heroSection.style.minHeight = '100vh';
+
+    modelContainer.style.gridRow = '1';
+    heroContent.style.gridRow = '2';
+
+    heroContent.querySelectorAll('.hero-title, .animated-name-wrapper, .subtitle, .premium-description, .cta-buttons, .social-links').forEach(el => {
+        if (!el) return;
+        el.style.textAlign = 'center';
+        el.style.justifyContent = 'center';
+        el.style.marginLeft = 'auto';
+        el.style.marginRight = 'auto';
+        el.style.width = '100%';
+    });
+
+    // Tablet watermark blur blocker
+    if (!modelContainer.querySelector('.tablet-watermark-blur')) {
+        const blocker = document.createElement('div');
+        blocker.className = 'tablet-watermark-blur';
+        blocker.style.cssText = `
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            width: 120px;
+            height: 40px;
+            background: rgba(0,0,0,1);
+            z-index: 9999999;
+            box-shadow: 0 0 40px 30px rgba(0,0,0,1);
+            border-radius: 50%;
+            filter: blur(12px);
+            pointer-events: none;
+        `;
+        modelContainer.appendChild(blocker);
+    }
+};
+
+// ==================== Init ====================
+document.addEventListener('DOMContentLoaded', () => {
+    // Loader
+    startLoading();
+
+    // Theme
+    checkTheme();
+
+    // Scroll observers
+    initScrollObserver();
+
+    // Projects
+    window.filterProjects('all');
+
+    // Skills 3D particles
+    initSkills3D();
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            window.projectsLimit = 3;
+            window.filterProjects(btn.dataset.filter);
+        });
+    });
+
+    // View more button
+    const viewMoreBtn = document.getElementById('view-more-projects');
+    if (viewMoreBtn) {
+        viewMoreBtn.onclick = (e) => {
+            e.preventDefault();
+            window.showMoreProjects();
+        };
+    }
+
+    // Tablet text fixes
+    if (isTabletView()) {
+        // Fix the "with" text placement
         const firstP = document.querySelector('.premium-description p:first-child');
         const secondP = document.querySelector('.premium-description p.with-line');
-
         if (firstP && secondP) {
-            // Fix the text layout
             const firstText = firstP.textContent.trim();
             const secondText = secondP.textContent.trim();
-
-            // Get only the text without "with"
             const newSecondText = secondText.replace("with", "").trim();
-
-            // Update the content
             firstP.textContent = firstText + " with";
             secondP.textContent = newSecondText;
         }
-    }
-});
 
-
-
-// --- Script Block ---
-
-
-// window.addEventListener('scroll', updateActiveMenuItem); // Removed for performance
-
-// Mobile menu enhancements block removed (redundant and causing scope errors)
-
-
-
-// --- Script Block ---
-
-
-// Update current year for copyright
-document.getElementById('current-year').textContent = new Date().getFullYear();
-
-
-
-// --- Script Block ---
-
-
-// window.addEventListener('scroll', highlightActiveSection); // Removed for performance
-
-
-
-// --- Script Block ---
-
-
-// Use direct script instead of event listener to avoid errors
-(function () {
-    // This runs immediately
-    try {
-        // Check for tablet view
-        if (window.matchMedia('(min-width: 768px) and (max-width: 1024px)').matches) {
-            console.log("APPLYING FORCE RESIZE FOR TABLET");
-
-            // Try to find the 3D model viewer - use timeout to ensure DOM is ready
-            setTimeout(function () {
-                const splineViewer = document.querySelector('spline-viewer');
-                if (splineViewer) {
-                    console.log("Found spline viewer, applying styles");
-                    // Force styling with !important flags
-                    splineViewer.style.cssText =
-                        "transform: translateX(9%) scale(1.5) !important;" +
-                        "width: 100% !important;" +
-                        "height: 100% !important;" +
-                        "min-height: 100% !important;" +
-                        "max-width: 100% !important;" +
-                        "max-height: 100% !important;" +
-                        "background: transparent !important;" +
-                        "box-shadow: none !important;";
-
-                    console.log("Applied styling to spline viewer");
-
-                    // Also style the container
-                    const container = document.querySelector('.hero-3d-container');
-                    if (container) {
-                        container.style.height = '550px';
-                        container.style.minHeight = '550px';
-                        container.style.maxHeight = '550px';
-                        container.style.background = 'transparent';
-                        container.style.boxShadow = 'none';
-                        console.log("Applied styling to container");
-                    }
-
-                    // Hide Three.js canvases
-                    const canvases = document.querySelectorAll('#hero-3d-space canvas:not([data-spline-viewer])');
-                    if (canvases && canvases.length > 0) {
-                        canvases.forEach(function (canvas) {
-                            if (canvas) {
-                                canvas.style.display = 'none';
-                                canvas.style.visibility = 'hidden';
-                                canvas.style.opacity = '0';
-                            }
-                        });
-                        console.log("Hidden other canvases");
-                    }
-                } else {
-                    console.log("Spline viewer not found");
-                }
-            }, 500);
-
-            // Try again after full page load
-            window.addEventListener('load', function () {
-                const splineViewer = document.querySelector('spline-viewer');
-                if (splineViewer) {
-                    splineViewer.style.transform = "translateX(9%) scale(1.5)";
-                    console.log("Applied transform on window load");
-                }
-            });
+        // Center about section for tablet
+        const aboutText = document.querySelector('#about .about-text');
+        if (aboutText) {
+            aboutText.style.textAlign = 'center';
+            aboutText.querySelectorAll('p').forEach(p => { p.style.textAlign = 'center'; });
+            const stats = document.querySelector('#about .stats-container');
+            if (stats) {
+                stats.style.display = 'flex';
+                stats.style.justifyContent = 'center';
+                stats.style.margin = '2rem auto';
+            }
+            aboutText.querySelectorAll('.stat-item').forEach(item => { item.style.textAlign = 'center'; });
         }
-    } catch (err) {
-        console.error("Error in tablet 3D model script:", err);
     }
-})();
 
+    // Spline positioning (retry as the viewer loads)
+    positionSplineModel();
+    setTimeout(positionSplineModel, 300);
+    setTimeout(positionSplineModel, 1000);
+    setTimeout(positionSplineModel, 3000);
 
+    // Spline loader hide
+    const splineViewer = document.querySelector('spline-viewer');
+    const splineLoader = document.getElementById('spline-loader');
+    if (splineViewer && splineLoader) {
+        const hideLoader = () => {
+            splineLoader.classList.add('hidden');
+            setTimeout(() => { splineLoader.style.display = 'none'; }, 200);
+        };
+        splineViewer.addEventListener('load', hideLoader);
+        setTimeout(hideLoader, 1500);
+    }
 
-// --- Script Block ---
+    // Watermark removal attempts (one-shot, all breakpoints)
+    setTimeout(removeSplineWatermark, 1000);
+    setTimeout(removeSplineWatermark, 2500);
+    setTimeout(removeSplineWatermark, 5000);
 
+    // Debounced resize handler
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            positionSplineModel();
+            removeSplineWatermark();
+        }, 150);
+    });
 
-// Old mobile menu code removed - using clean version in DOMContentLoaded
-
-
-
-// --- Script Block ---
-
-
-// Add typing animation completion
-document.addEventListener('DOMContentLoaded', function () {
+    // Typing animation completion
     setTimeout(() => {
         const nameElement = document.querySelector('.animated-name');
         if (nameElement) {
             nameElement.classList.add('completed');
         }
-    }, 3000); // Match to typing animation duration
-});
+    }, 3000);
 
-
-
-// --- Script Block ---
-
-
-// Wait for DOM and Spline to load
-document.addEventListener('DOMContentLoaded', function () {
-    // Give time for Spline to initialize
-    setTimeout(function () {
-        positionSplineModel();
-
-        // Add resize handler with debounce
-        let resizeTimeout;
-        window.addEventListener('resize', function () {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(positionSplineModel, 100);
-        });
-    }, 1000);
-
-    // Position model based on screen size
-    function positionSplineModel() {
-        const splineViewer = document.querySelector('spline-viewer');
-        if (!splineViewer) return;
-
-        // Reset any existing transform
-        splineViewer.style.transform = '';
-
-        // Mobile vs desktop positioning
-        if (window.innerWidth <= 767) {
-            // Mobile - shift left to center the model (-25%)
-            splineViewer.style.transform = 'translateX(-25%)';
-
-            // Add watermark blocker on mobile
-            addWatermarkBlocker();
-        } else {
-            // Desktop - larger right shift (30%) - unchanged
-            splineViewer.style.transform = 'translateX(30%)';
-        }
-
-        // Mobile vs desktop positioning
-        if (window.innerWidth <= 767) {
-            // Mobile - shift further left to center the model (-40%)
-            splineViewer.style.transform = 'translateX(-40%)';
-
-            // Add watermark blocker on mobile
-            addWatermarkBlocker();
-        } else {
-            // Desktop - larger right shift (30%) - unchanged
-            splineViewer.style.transform = 'translateX(30%)';
-        }
-    }
-
-    // Handle Spline watermark
-    function addWatermarkBlocker() {
-        if (window.innerWidth > 767) return; // Only on mobile
-
-        const container = document.getElementById('hero-3d-space');
-        if (!container) return;
-
-        // Remove existing blockers
-        const existingBlockers = container.querySelectorAll('.spline-watermark-blocker');
-        existingBlockers.forEach(el => el.remove());
-
-        // Add new blocker
-        const blocker = document.createElement('div');
-        blocker.className = 'spline-watermark-blocker';
-        container.appendChild(blocker);
+    // Current year
+    const yearEl = document.getElementById('current-year');
+    if (yearEl) {
+        yearEl.textContent = new Date().getFullYear();
     }
 });
 
+// ==================== Toast Notifications ====================
+const showToast = (type, title, message) => {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.setAttribute('aria-live', 'polite');
+        document.body.appendChild(container);
+    }
 
+    const toast = document.createElement('div');
+    toast.className = `toast ${type === 'error' ? 'error' : 'success'}`;
+    const icon = type === 'error' ? 'fa-times' : 'fa-check';
+    toast.innerHTML = `
+        <span class="toast-icon"><i class="fas ${icon}"></i></span>
+        <div class="toast-body">
+            <span class="toast-title">${title}</span>
+            <span class="toast-message">${message}</span>
+        </div>
+        <button type="button" class="toast-close" aria-label="Close"><i class="fas fa-times"></i></button>
+    `;
+    container.appendChild(toast);
 
-// --- Script Block ---
+    // Animate in on the next frame
+    requestAnimationFrame(() => toast.classList.add('show'));
 
+    // Auto-dismiss after 4s, manual close button too
+    let dismissed = false;
+    const dismiss = () => {
+        if (dismissed) return;
+        dismissed = true;
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 350);
+    };
+    toast.querySelector('.toast-close').addEventListener('click', dismiss);
+    setTimeout(dismiss, 4000);
+};
 
-// Update current year for copyright
-document.getElementById('current-year').textContent = new Date().getFullYear();
+// ==================== Contact Form Submission (FormSubmit AJAX) ====================
+// Emails are delivered to this address via FormSubmit (no backend needed).
+// NOTE: The first submission triggers a one-time activation email from FormSubmit —
+// click the link in it once so all future submissions land in the inbox.
+const CONTACT_EMAIL = 'adityacodearena@gmail.com';
 
-// Old mobile menu code removed - using clean version in DOMContentLoaded
+document.addEventListener('submit', function (e) {
+    const form = e.target;
+    if (!form.classList.contains('contact-form')) return;
 
+    e.preventDefault();
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (!submitButton) return;
 
+    // Honeypot: bots fill hidden fields — silently drop spam
+    const honey = form.querySelector('input[name="_honey"]');
+    if (honey && honey.value.trim() !== '') return;
 
-// --- Script Block ---
+    const originalText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
+    // Build JSON payload from the form fields
+    const formData = new FormData(form);
+    const payload = {
+        _subject: `Portfolio Contact: ${formData.get('name') || 'New Message'}`,
+        _template: 'table',
+        _captcha: 'false',
+        _honey: ''
+    };
+    formData.forEach((value, key) => {
+        if (key !== '_honey') payload[key] = value;
+    });
 
-// Testimonial slider functionality - completely rewritten
-document.addEventListener('DOMContentLoaded', function () {
-    // Get all testimonial elements
-    const cards = document.querySelectorAll('.testimonial-card');
-    const dots = document.querySelectorAll('.testimonial-controls .dot');
-    const prevBtn = document.querySelector('.testimonial-controls .prev');
-    const nextBtn = document.querySelector('.testimonial-controls .next');
+    // Timeout guard so the button never gets stuck in "Sending..."
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    // No cards? Exit early
-    if (!cards.length) return;
-
-    let currentIndex = 0;
-
-    // Initialize: show first card, hide the rest
-    function initCarousel() {
-        cards.forEach((card, index) => {
-            if (index === 0) {
-                card.classList.add('active-card');
+    fetch(`https://formsubmit.co/ajax/${CONTACT_EMAIL}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data && (data.success === 'true' || data.success === true)) {
+                form.reset();
+                submitButton.innerHTML = '<i class="fas fa-check"></i> Sent Successfully!';
+                showToast('success', 'Message Sent', 'Thanks for reaching out — I\'ll get back to you within 1-2 business days.');
             } else {
-                card.classList.remove('active-card');
+                submitButton.innerHTML = '<i class="fas fa-times"></i> Failed - try again';
+                showToast('error', 'Something Went Wrong', 'Please try again in a moment.');
             }
-            // Force display property to prevent quirks
-            card.style.display = index === 0 ? 'block' : 'none';
-        });
-
-        // Set first dot as active
-        if (dots.length) {
-            dots[0].classList.add('active');
-        }
-    }
-
-    // Show specific slide
-    function showSlide(index) {
-        // Validate index
-        if (index < 0) index = cards.length - 1;
-        if (index >= cards.length) index = 0;
-
-        // Hide all cards
-        cards.forEach((card, i) => {
-            card.classList.remove('active-card');
-            card.style.display = 'none';
-
-            // Update dots
-            if (dots[i]) {
-                dots[i].classList.remove('active');
-            }
-        });
-
-        // Show selected card
-        cards[index].classList.add('active-card');
-        cards[index].style.display = 'block';
-
-        // Update active dot
-        if (dots[index]) {
-            dots[index].classList.add('active');
-        }
-
-        // Update current index
-        currentIndex = index;
-
-        // Log for debugging
-        console.log('Changed to slide', index);
-    }
-
-    // Next slide
-    function nextSlide() {
-        showSlide(currentIndex + 1);
-    }
-
-    // Previous slide
-    function prevSlide() {
-        showSlide(currentIndex - 1);
-    }
-
-    // Set up event listeners
-    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
-    if (prevBtn) prevBtn.addEventListener('click', prevSlide);
-
-    // Dot navigation
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', function () {
-            showSlide(index);
-        });
-    });
-
-    // Initialize on page load
-    initCarousel();
-
-    // Optional: Keyboard navigation
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'ArrowLeft') prevSlide();
-        if (e.key === 'ArrowRight') nextSlide();
-    });
-});
-
-
-
-// --- Script Block ---
-
-
-// Auto rotation for testimonials
-document.addEventListener('DOMContentLoaded', function () {
-    const testimonialCards = document.querySelectorAll('.testimonial-card');
-    const dots = document.querySelectorAll('.testimonial-controls .dot');
-
-    // Find the active slide index
-    function getActiveIndex() {
-        for (let i = 0; i < testimonialCards.length; i++) {
-            if (testimonialCards[i].style.opacity === '1') {
-                return i;
-            }
-        }
-        return 0; // Default to first slide
-    }
-
-    // Trigger click on next button every 5 seconds
-    setInterval(function () {
-        const nextBtn = document.querySelector('.control-btn.next');
-        if (nextBtn) {
-            nextBtn.click();
-        }
-    }, 5000);
-});
-
-
-
-// --- Script Block ---
-
-
-// Wait for DOM content to load
-document.addEventListener('DOMContentLoaded', function () {
-    // Only on mobile
-    if (window.matchMedia('(max-width: 767px)').matches) {
-        console.log("Mobile detected, hiding Spline watermark");
-
-        // Remove watermark after Spline loads
-        setTimeout(removeSplineWatermark, 1000);
-        setTimeout(removeSplineWatermark, 2000);
-        setTimeout(removeSplineWatermark, 3000);
-
-        // Create a blocker element
-        createWatermarkBlocker();
-
-        // Monitor for changes and keep removing watermark
-        setInterval(removeSplineWatermark, 2000);
-    }
-
-    function createWatermarkBlocker() {
-        const heroContainer = document.getElementById('hero-3d-space');
-        if (!heroContainer) return;
-
-        const blocker = document.createElement('div');
-        blocker.className = 'spline-watermark-blocker';
-        blocker.id = 'spline-watermark-blocker';
-
-        heroContainer.style.position = 'relative';
-        heroContainer.appendChild(blocker);
-
-        console.log("Added watermark blocker element");
-    }
-
-    function removeSplineWatermark() {
-        const selectors = [
-            'spline-viewer a',
-            'spline-viewer a[target="_blank"]',
-            'spline-viewer div[class*="logo"]',
-            'spline-viewer div[class*="watermark"]',
-            'spline-viewer > div > div > a',
-            'spline-viewer iframe',
-            'spline-viewer [data-name*="logo"]',
-            'spline-viewer [data-name*="watermark"]',
-            'spline-viewer > div > div:last-child'
-        ];
-
-        let found = 0;
-
-        selectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-                el.style.display = 'none';
-                el.style.opacity = '0';
-                el.style.visibility = 'hidden';
-                el.style.width = '0';
-                el.style.height = '0';
-                el.style.overflow = 'hidden';
-                el.style.position = 'absolute';
-                el.style.zIndex = '-99999';
-                el.style.pointerEvents = 'none';
-
-                found++;
-
-                try {
-                    el.remove();
-                } catch (e) {
-                    console.log("Couldn't remove element, hiding instead");
-                }
-            });
-        });
-
-        if (found > 0) {
-            console.log(`Removed/hid ${found} potential watermark elements`);
-        }
-    }
-});
-
-
-
-// --- Script Block ---
-
-
-// Check if device is tablet and apply special positioning - IMPROVED VERSION
-document.addEventListener('DOMContentLoaded', function () {
-    const isTablet = window.matchMedia("(min-width: 768px) and (max-width: 1024px)").matches;
-
-    if (isTablet) {
-        console.log("Tablet detected - applying IMPROVED layout fix");
-
-        // Function to apply tablet layout fix
-        function applyTabletFix() {
-            try {
-                // Get the hero section elements
-                const heroSection = document.querySelector('.hero-section');
-                const heroContent = document.querySelector('.hero-content');
-                const modelContainer = document.querySelector('.hero-3d-container');
-
-                if (!heroSection || !heroContent || !modelContainer) {
-                    console.log("Hero elements not ready yet, will retry...");
-                    return false; // Elements not found yet
-                }
-
-                // Make sure 3D model loads properly
-                const splineViewer = document.querySelector('spline-viewer');
-                if (splineViewer) {
-                    // Fix spline viewer styling
-                    splineViewer.style.transform = 'translateX(8%) scale(1.4)';
-                    splineViewer.style.width = '100%';
-                    splineViewer.style.height = '100%';
-                    splineViewer.style.opacity = '1';
-                    splineViewer.style.visibility = 'visible';
-                    splineViewer.style.display = 'block';
-                    splineViewer.style.background = 'transparent';
-                    splineViewer.style.boxShadow = 'none';
-
-                    // Set loading="eager" to prioritize loading
-                    splineViewer.setAttribute('loading', 'eager');
-
-                    // Create additional watermark blocker
-                    const watermarkBlocker = document.createElement('div');
-                    watermarkBlocker.style.cssText = `
-                                position: absolute;
-                                bottom: 12px;
-                                right: 12px;
-                                width: 120px;
-                                height: 40px;
-                                background: rgba(0,0,0,1);
-                                z-index: 9999999;
-                                box-shadow: 0 0 40px 30px rgba(0,0,0,1);
-                                border-radius: 50%;
-                                filter: blur(12px);
-                                pointer-events: none;
-                            `;
-                    modelContainer.appendChild(watermarkBlocker);
-
-                    console.log("Fixed spline viewer styling for tablet");
-                }
-
-                // Ensure the hero section has grid layout
-                heroSection.style.display = 'grid';
-                heroSection.style.gridTemplateColumns = '1fr';
-                heroSection.style.gridTemplateRows = 'auto auto';
-                heroSection.style.padding = '120px 20px 80px 20px';
-                heroSection.style.height = 'auto';
-                heroSection.style.minHeight = '100vh';
-
-                // Ensure model container is in the first row
-                if (modelContainer && heroContent) {
-                    modelContainer.style.gridRow = '1';
-                    heroContent.style.gridRow = '2';
-                }
-
-                // Center all text elements
-                const textElements = heroContent.querySelectorAll('.hero-title, .animated-name-wrapper, .subtitle, .premium-description, .cta-buttons, .social-links');
-                textElements.forEach(el => {
-                    if (el) {
-                        el.style.textAlign = 'center';
-                        el.style.justifyContent = 'center';
-                        el.style.marginLeft = 'auto';
-                        el.style.marginRight = 'auto';
-                        el.style.width = '100%';
-                    }
-                });
-
-                console.log("Successfully applied tablet layout styling");
-                return true; // Successfully applied
-            } catch (error) {
-                console.error("Error applying tablet fix:", error);
-                return false;
-            }
-        }
-
-        // First try immediate application
-        let applied = applyTabletFix();
-
-        // If not successful, try with increasing delays
-        if (!applied) {
-            const delays = [100, 300, 500, 1000, 2000, 3000];
-            delays.forEach(function (delay) {
-                setTimeout(function () {
-                    if (!applied) {
-                        applied = applyTabletFix();
-                    }
-                }, delay);
-            });
-        }
-
-        // Also apply on window load for extra reliability
-        window.addEventListener('load', applyTabletFix);
-
-        // Listen for resize events to ensure fix stays applied
-        window.addEventListener('resize', function () {
-            // Only apply if still in tablet view
-            if (window.matchMedia("(min-width: 768px) and (max-width: 1024px)").matches) {
-                applyTabletFix();
-            }
-        });
-    }
-
-    // Ensure section is tall enough
-    if (heroSection) {
-        heroSection.style.cssText = `
-                            position: relative !important;
-                            display: flex !important;
-                            flex-direction: column !important;
-                            padding-top: 65px !important;
-                            min-height: 900px !important;
-                        `;
-    }
-
-    // Extra styling for Spline
-    const splineViewer = document.querySelector('spline-viewer');
-    if (splineViewer) {
-        splineViewer.style.cssText = `
-                            transform: translateX(12%) scale(1.5) !important;
-                            margin: 0 auto !important;
-                            position: relative !important;
-                            display: block !important;
-                            opacity: 1 !important;
-                            z-index: 999 !important;
-                            visibility: visible !important;
-                            background: transparent !important;
-                            box-shadow: none !important;
-                        `;
-    }
-
-    // Hide any Three.js canvases
-    const canvases = document.querySelectorAll('#hero-3d-space canvas:not([data-spline-viewer])');
-    canvases.forEach(function (canvas) {
-        canvas.style.display = 'none';
-        canvas.style.visibility = 'hidden';
-        canvas.style.opacity = '0';
-        canvas.style.position = 'absolute';
-        canvas.style.zIndex = '-9999';
-        canvas.style.pointerEvents = 'none';
-        canvas.width = 0;
-        canvas.height = 0;
-    });
-}
-
-);
-
-
-
-// --- Script Block ---
-
-
-// Update current year for copyright
-document.getElementById('current-year').textContent = new Date().getFullYear();
-
-
-
-// --- Script Block ---
-
-
-// Old mobile menu code removed - using clean version in DOMContentLoaded
-
-
-// Spline Loader Logic
-document.addEventListener('DOMContentLoaded', function () {
-    const splineViewer = document.querySelector('spline-viewer');
-    const loader = document.getElementById('spline-loader');
-
-    if (splineViewer && loader) {
-        // Function to hide loader
-        const hideLoader = () => {
-            loader.classList.add('hidden');
+        })
+        .catch(() => {
+            submitButton.innerHTML = '<i class="fas fa-times"></i> Failed - try again';
+            showToast('error', 'Something Went Wrong', 'Please check your connection and try again.');
+        })
+        .finally(() => {
+            clearTimeout(timeoutId);
             setTimeout(() => {
-                loader.style.display = 'none';
-            }, 200); // Short timeout just for fade effect
-        };
-
-        // Listen for load event
-        splineViewer.addEventListener('load', hideLoader);
-
-        // Fallback timeout - force hide after 1.5s as requested
-        setTimeout(hideLoader, 1500);
-    }
-});
-
-// ==================== Experience Stats Count-up ====================
-document.addEventListener('DOMContentLoaded', () => {
-    const stats = document.querySelectorAll('.exp-hud-stats .stat-num');
-
-    const countUp = (element) => {
-        const target = parseInt(element.innerText.replace('+', ''));
-        let current = 0;
-        const increment = target / 50; // Adjust for speed
-
-        const updateCount = () => {
-            if (current < target) {
-                current += increment;
-                element.innerText = Math.ceil(current) + '+';
-                setTimeout(updateCount, 20);
-            } else {
-                element.innerText = target + '+';
-            }
-        };
-
-        updateCount();
-    };
-
-    const observerOptions = {
-        threshold: 0.5
-    };
-
-    const statsObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                countUp(entry.target);
-                observer.unobserve(entry.target);
-            }
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            }, 2500);
         });
-    }, observerOptions);
-
-    stats.forEach(stat => statsObserver.observe(stat));
-});
-
-// ==================== EmailJS Integration ====================
-// Note: Replace "YOUR_PUBLIC_KEY" with your actual public key in the .env or directly here for static site
-(function () {
-    // Check if emailjs is loaded
-    if (typeof emailjs !== 'undefined') {
-        const PUBLIC_KEY = "YOUR_PUBLIC_KEY"; // Placeholder
-        emailjs.init(PUBLIC_KEY);
-    }
-})();
-
-document.addEventListener('DOMContentLoaded', () => {
-    const contactForm = document.querySelector('.contact-form');
-
-    if (contactForm) {
-        contactForm.addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            // Changes button text to show sending status
-            const submitBtn = this.querySelector('.send-brief-btn');
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span>Sending...</span>';
-            submitBtn.disabled = true;
-
-            // EmailJS credentials (User needs to replace these)
-            const serviceID = 'YOUR_SERVICE_ID';
-            const templateID = 'YOUR_TEMPLATE_ID';
-
-            emailjs.sendForm(serviceID, templateID, this)
-                .then(() => {
-                    submitBtn.innerHTML = '<span>Sent Successfully!</span>';
-                    submitBtn.style.backgroundColor = '#4CAF50';
-                    this.reset();
-
-                    setTimeout(() => {
-                        submitBtn.innerHTML = originalBtnText;
-                        submitBtn.disabled = false;
-                        submitBtn.style.backgroundColor = '';
-                    }, 5000);
-                }, (err) => {
-                    alert('Failed to send message. Please try again later.');
-                    console.error('EmailJS Error:', err);
-                    submitBtn.innerHTML = '<span>Error! Try Again</span>';
-                    submitBtn.style.backgroundColor = '#f44336';
-                    submitBtn.disabled = false;
-
-                    setTimeout(() => {
-                        submitBtn.innerHTML = originalBtnText;
-                        submitBtn.style.backgroundColor = '';
-                    }, 5000);
-                });
-        });
-    }
 });
