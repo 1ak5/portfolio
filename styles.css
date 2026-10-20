@@ -8666,6 +8666,7 @@ body {
 }
 
 .node-content {
+    position: relative;
     transition: transform 0.4s ease;
 }
 
@@ -8704,25 +8705,83 @@ body {
 .node-details {
     list-style: none;
     padding: 0;
-    text-align: left;
+    margin: 0;
     display: inline-block;
+    text-align: left;
 }
 
 .node-details li {
-    font-size: 1.3rem;
-    color: #bbb;
-    margin-bottom: 12px;
-    padding-left: 20px;
+    font-size: 1.2rem;
+    color: #bcbcbc;
+    margin-bottom: 10px;
+    padding-left: 18px;
     position: relative;
-    line-height: 1.5;
+    line-height: 1.55;
+    text-wrap: balance;
 }
 
 .node-details li::before {
-    content: '•';
+    content: '';
     position: absolute;
     left: 0;
+    top: 0.65em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    opacity: 0.9;
+}
+
+.node-details li:last-child {
+    margin-bottom: 0;
+}
+
+/* --- Certificate Link (pill button, centered in the tag → heading gap) --- */
+.node-cert-link {
+    position: absolute;
+    top: 76px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 20px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
     color: var(--primary-color);
-    font-weight: 900;
+    background: rgba(var(--primary-rgb, 192, 192, 192), 0.08);
+    border: 1px solid rgba(var(--primary-rgb, 192, 192, 192), 0.35);
+    border-radius: 50px;
+    text-decoration: none;
+    white-space: nowrap;
+    z-index: 3;
+    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.node-cert-link i {
+    font-size: 0.9em;
+    line-height: 1;
+    transition: transform 0.25s ease;
+}
+
+.node-cert-link .fa-arrow-up-right-from-square {
+    opacity: 0.6;
+    font-size: 0.78em;
+}
+
+.node-cert-link:hover,
+.node-cert-link:focus-visible {
+    background: rgba(var(--primary-rgb, 192, 192, 192), 0.16);
+    border-color: rgba(var(--primary-rgb, 192, 192, 192), 0.7);
+    box-shadow: 0 0 22px rgba(var(--primary-rgb, 192, 192, 192), 0.22);
+    transform: translate(-50%, calc(-50% - 3px));
+    outline: none;
+}
+
+.node-cert-link:hover .fa-arrow-up-right-from-square {
+    opacity: 1;
+    transform: translate(2px, -2px);
 }
 
 /* --- Static Aura (Hover Only) --- */
@@ -8786,6 +8845,25 @@ body {
 
     .node-content h4 {
         margin-top: 0;
+    }
+
+    .node-details {
+        margin: 0;
+        max-width: none;
+        text-align: left;
+    }
+
+    .node-cert-link {
+        position: static;
+        display: flex;
+        width: max-content;
+        transform: none;
+        margin: 14px 0 20px;
+    }
+
+    .node-cert-link:hover,
+    .node-cert-link:focus-visible {
+        transform: translateY(-2px);
     }
 }
 
